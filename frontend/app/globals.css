@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 7, 7, 7;
+  --text: 245, 245, 247;
+}
+
+body {
+  color: rgb(var(--text));
+  background-color: rgb(var(--background));
+  font-family: 'Poppins', 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Urdu Font Compatibility helper */
+.font-urdu {
+  font-family: 'Noto Nastaliq Urdu', 'Poppins', sans-serif;
+  line-height: 2.2;
+}
+
+/* Custom Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070707;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #222;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #c41e3a;
+}
+
+/* Glassmorphism Classes */
+.glass {
+  background: rgba(13, 13, 13, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-premium {
+  background: linear-gradient(135deg, rgba(20, 20, 20, 0.8) 0%, rgba(10, 10, 10, 0.9) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(196, 30, 58, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* Cinematic lighting effects */
+.radial-glow {
+  background: radial-gradient(circle, rgba(196, 30, 58, 0.15) 0%, rgba(7, 7, 7, 0) 70%);
+}
+
+.radial-glow-gold {
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, rgba(7, 7, 7, 0) 70%);
+}
+
+/* Floating animation */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+/* Hover glow */
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(196, 30, 58, 0.4);
+  transition: all 0.3s ease-in-out;
+}

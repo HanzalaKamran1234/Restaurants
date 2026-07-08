@@ -1,0 +1,13 @@
+{
+  "name": "ziyafat-monorepo",
+  "version": "1.0.0",
+  "description": "Monorepo for Ziyafat Premium Online Food Delivery Platform",
+  "scripts": {
+    "backend:dev": "npm --prefix backend run dev",
+    "backend:start": "npm --prefix backend start",
+    "backend:seed": "npm --prefix backend run db:seed",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:start": "npm --prefix frontend start"
+  }
+}

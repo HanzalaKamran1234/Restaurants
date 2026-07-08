@@ -1,0 +1,112 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  password      String
+  role          String    @default("CUSTOMER") // "ADMIN", "CUSTOMER"
+  phone         String?
+  whatsapp      String?
+  loyaltyPoints Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  addresses     Address[]
+  orders        Order[]
+  reviews       Review[]
+}
+
+model Address {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  landmark    String?
+  area        String   // e.g. "North Nazimabad", "Gulshan-e-Iqbal"
+  fullAddress String
+  createdAt   DateTime @default(now())
+}
+
+model Category {
+  id        String     @id @default(uuid())
+  name      String
+  slug      String     @unique
+  image     String
+  items     MenuItem[]
+}
+
+model MenuItem {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  ingredients String?     // Comma separated list of ingredients
+  calories    Int?
+  spiceLevel  String      @default("NONE") // "NONE", "MILD", "MEDIUM", "SPICY"
+  servingSize String?     // e.g. "1 Person", "2-3 Persons"
+  price       Float
+  discount    Float       @default(0) // Discount percentage (e.g. 10 for 10% off)
+  available   Boolean     @default(true)
+  prepTime    Int         @default(15) // Prep time in minutes
+  rating      Float       @default(4.5)
+  image       String
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+  reviews     Review[]
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status          String      @default("PENDING") // "PENDING", "CONFIRMED", "PREPARING", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"
+  totalAmount     Float
+  deliveryCharge  Float
+  tax             Float
+  finalAmount     Float
+  paymentMethod   String      @default("COD") // "COD", "JAZZCASH", "EASYPAISA", "CARD"
+  deliveryAddress String
+  nearestLandmark String?
+  area            String
+  instructions    String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  quantity   Int
+  price      Float
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  rating     Int
+  comment    String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model Coupon {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  discountPercent Float
+  maxDiscount     Float?
+  active          Boolean  @default(true)
+  expiresAt       DateTime
+}
