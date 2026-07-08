@@ -19,6 +19,8 @@ export default function Checkout() {
 
   const t = translations[language];
 
+  const [mounted, setMounted] = useState(false);
+
   // Selected saved address ID (or 'custom')
   const [selectedAddressId, setSelectedAddressId] = useState('custom');
 
@@ -40,6 +42,7 @@ export default function Checkout() {
 
   // Prefill details if user logged in
   useEffect(() => {
+    setMounted(true);
     if (user) {
       setName(user.name);
       setPhone(user.phone || '');
@@ -70,6 +73,14 @@ export default function Checkout() {
       }
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-32 text-center text-xs text-text-muted font-sans relative z-10">
+        Preparing secure checkout session...
+      </div>
+    );
+  }
 
   if (cart.length === 0 && !createdOrder) {
     return (

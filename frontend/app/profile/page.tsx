@@ -40,8 +40,11 @@ export default function ProfileDashboard() {
   const [pwdMsg, setPwdMsg] = useState('');
   const [pwdError, setPwdError] = useState('');
 
+  const [mounted, setMounted] = useState(false);
+
   // Sync delivery area default select
   useEffect(() => {
+    setMounted(true);
     if (deliveryAreas.length > 0) {
       setAddrAreaId(deliveryAreas[0].id);
     }
@@ -64,6 +67,14 @@ export default function ProfileDashboard() {
         });
     }
   }, [token]);
+
+  if (!mounted) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-32 text-center text-xs text-text-muted font-sans">
+        Loading profile details...
+      </div>
+    );
+  }
 
   if (!user) {
     return (

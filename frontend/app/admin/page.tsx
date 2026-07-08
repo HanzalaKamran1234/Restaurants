@@ -65,6 +65,7 @@ interface AdminMenuItem {
 
 export default function AdminDashboard() {
   const { user, token, deliveryAreas, loadDeliveryAreas } = useApp();
+  const [mounted, setMounted] = useState(false);
 
   const [metrics, setMetrics] = useState<AnalyticsMetrics>({
     totalRevenue: 54200,
@@ -95,7 +96,19 @@ export default function AdminDashboard() {
 
   const [statusMsg, setStatusMsg] = useState('');
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // 1. Authorization Guard
+  if (!mounted) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-32 text-center text-xs text-text-muted font-sans">
+        Verifying Ziyafat administrator status...
+      </div>
+    );
+  }
+
   if (!user || user.role !== 'ADMIN') {
     return (
       <div className="max-w-md mx-auto px-4 py-32 text-center space-y-6 relative z-10 font-sans">
