@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useApp } from '../context/AppContext';
 import { translations } from '../utils/translations';
-import { X, Trash2, Plus, Minus, Tag, CreditCard } from 'lucide-react';
+import { X, Trash2, Plus, Minus, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 
 export const CartDrawer: React.FC = () => {
@@ -13,18 +13,10 @@ export const CartDrawer: React.FC = () => {
     removeFromCart,
     isCartOpen,
     setIsCartOpen,
-    appliedCoupon,
-    applyCouponCode,
-    removeCouponCode,
     language,
   } = useApp();
 
   const t = translations[language];
-
-  const [promoInput, setPromoInput] = useState('');
-  const [promoError, setPromoError] = useState('');
-  const [promoSuccess, setPromoSuccess] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isCartOpen) return null;
 
@@ -34,37 +26,9 @@ export const CartDrawer: React.FC = () => {
     return sum + finalPrice * item.quantity;
   }, 0);
 
-  let discountAmount = 0;
-  if (appliedCoupon) {
-    discountAmount = subtotal * (appliedCoupon.discountPercent / 100);
-    if (appliedCoupon.maxDiscount && discountAmount > appliedCoupon.maxDiscount) {
-      discountAmount = appliedCoupon.maxDiscount;
-    }
-  }
-
-  const netSubtotal = Math.max(0, subtotal - discountAmount);
   const deliveryCharge = cart.length > 0 ? 150 : 0;
-  const tax = Math.round(netSubtotal * 0.13); // 13% GST
-  const grandTotal = netSubtotal + deliveryCharge + tax;
-
-  const handleApplyPromo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!promoInput.trim()) return;
-
-    setPromoError('');
-    setPromoSuccess('');
-    setIsSubmitting(true);
-
-    const result = await applyCouponCode(promoInput.trim());
-    setIsSubmitting(false);
-
-    if (result.success) {
-      setPromoSuccess(result.message);
-      setPromoInput('');
-    } else {
-      setPromoError(result.message);
-    }
-  };
+  const tax = Math.round(subtotal * 0.13); // 13% GST
+  const grandTotal = subtotal + deliveryCharge + tax;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden font-sans">
@@ -165,54 +129,12 @@ export const CartDrawer: React.FC = () => {
           {/* Pricing & Checkout Summary */}
           {cart.length > 0 && (
             <div className="border-t border-primary/20 bg-black/40 px-6 py-6 space-y-4">
-              {/* Promo Coupon Form */}
-              {!appliedCoupon ? (
-                <form onSubmit={handleApplyPromo} className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Tag size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-                    <input
-                      type="text"
-                      placeholder="Promo Code (e.g. ZIYAFAT10)"
-                      value={promoInput}
-                      onChange={(e) => setPromoInput(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 focus:border-primary rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none placeholder:text-text-muted"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="bg-primary/20 border border-primary/55 hover:bg-primary text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all"
-                  >
-                    Apply
-                  </button>
-                </form>
-              ) : (
-                <div className="flex items-center justify-between bg-primary/10 border border-primary/30 p-2.5 rounded-lg text-sm">
-                  <div className="flex items-center gap-2 text-primary-light">
-                    <Tag size={16} />
-                    <span className="font-bold">{appliedCoupon.code}</span>
-                    <span>({appliedCoupon.discountPercent}% Off applied)</span>
-                  </div>
-                  <button onClick={removeCouponCode} className="text-text-muted hover:text-white">
-                    <X size={15} />
-                  </button>
-                </div>
-              )}
-              {promoError && <p className="text-xs text-primary-light">{promoError}</p>}
-              {promoSuccess && <p className="text-xs text-green-400">{promoSuccess}</p>}
-
               {/* Pricing breakdown */}
               <div className="space-y-2 text-sm text-text-muted">
                 <div className="flex justify-between">
                   <span>{t.subtotal}</span>
                   <span className="text-white font-medium">Rs. {Math.round(subtotal)}</span>
                 </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-primary-light">
-                    <span>Discount</span>
-                    <span>- Rs. {Math.round(discountAmount)}</span>
-                  </div>
-                )}
                 <div className="flex justify-between">
                   <span>{t.deliveryCharge}</span>
                   <span className="text-white">Rs. {deliveryCharge}</span>

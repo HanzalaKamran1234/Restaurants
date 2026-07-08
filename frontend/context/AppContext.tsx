@@ -11,6 +11,24 @@ export interface CartItem {
   image: string;
 }
 
+export interface DeliveryArea {
+  id: string;
+  name: string;
+  deliveryCharge: number;
+  estimatedTime: string;
+  minOrderAmount: number;
+  available: boolean;
+}
+
+export interface CustomerAddress {
+  id: string;
+  title: string;
+  landmark?: string;
+  areaId: string;
+  area: DeliveryArea;
+  fullAddress: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -18,13 +36,8 @@ export interface User {
   role: string;
   phone?: string;
   whatsapp?: string;
-  loyaltyPoints: number;
-  addresses?: Array<{
-    id: string;
-    landmark?: string;
-    area: string;
-    fullAddress: string;
-  }>;
+  addresses?: CustomerAddress[];
+  favoriteItems?: any[];
 }
 
 interface AppContextType {
@@ -37,13 +50,23 @@ interface AppContextType {
   token: string | null;
   loginUser: (token: string, user: User) => void;
   logoutUser: () => void;
-  appliedCoupon: { code: string; discountPercent: number; maxDiscount: number | null } | null;
-  applyCouponCode: (code: string) => Promise<{ success: boolean; message: string }>;
-  removeCouponCode: () => void;
   language: 'en' | 'ur';
   setLanguage: (lang: 'en' | 'ur') => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  
+  // v2 Address Management
+  addresses: CustomerAddress[];
+  addAddress: (title: string, areaId: string, landmark: string, fullAddress: string) => Promise<boolean>;
+  deleteAddress: (id: string) => Promise<boolean>;
+  
+  // v2 Favorites
+  favorites: any[];
+  toggleFavorite: (itemId: string) => Promise<void>;
+  
+  // v2 Delivery Areas
+  deliveryAreas: DeliveryArea[];
+  loadDeliveryAreas: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -54,10 +77,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [appliedCoupon, setAppliedCoupon] = useState<AppContextType['appliedCoupon']>(null);
   const [language, setLanguage] = useState<'en' | 'ur'>('en');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+
+  // v2 states
+  const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [deliveryAreas, setDeliveryAreas] = useState<DeliveryArea[]>([]);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -71,7 +98,58 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (savedToken) setToken(savedToken);
     if (savedUser) setUser(JSON.parse(savedUser));
     if (savedLang) setLanguage(savedLang as 'en' | 'ur');
+
+    loadDeliveryAreas();
   }, []);
+
+  // Fetch Delivery Areas from database
+  const loadDeliveryAreas = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/extra/delivery-areas`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setDeliveryAreas(data);
+      }
+    } catch (err) {
+      console.log('Failed to fetch delivery areas, using fallback');
+      setDeliveryAreas([
+        {
+          id: 'area-north',
+          name: 'North Nazimabad',
+          deliveryCharge: 150,
+          estimatedTime: '30 Mins',
+          minOrderAmount: 300,
+          available: true
+        }
+      ]);
+    }
+  };
+
+  // Sync profile details if logged in
+  useEffect(() => {
+    if (token) {
+      fetchProfileData();
+    } else {
+      setAddresses([]);
+      setFavorites([]);
+    }
+  }, [token]);
+
+  const fetchProfileData = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.user) {
+        setUser(data.user);
+        if (data.user.addresses) setAddresses(data.user.addresses);
+        if (data.user.favoriteItems) setFavorites(data.user.favoriteItems);
+      }
+    } catch (err) {
+      console.log('Error loading user profile details');
+    }
+  };
 
   // Save cart to localStorage
   useEffect(() => {
@@ -105,7 +183,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const clearCart = () => {
     setCart([]);
-    setAppliedCoupon(null);
   };
 
   const loginUser = (newToken: string, newUser: User) => {
@@ -118,32 +195,63 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const logoutUser = () => {
     setToken(null);
     setUser(null);
+    setAddresses([]);
+    setFavorites([]);
     localStorage.removeItem('ziyafat_token');
     localStorage.removeItem('ziyafat_user');
   };
 
-  const applyCouponCode = async (code: string) => {
+  // v2 Saved Addresses Operations
+  const addAddress = async (title: string, areaId: string, landmark: string, fullAddress: string): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE}/coupons/validate?code=${code}`);
-      const data = await res.json();
-      if (data.valid) {
-        const couponInfo = {
-          code: code.toUpperCase(),
-          discountPercent: data.discountPercent,
-          maxDiscount: data.maxDiscount,
-        };
-        setAppliedCoupon(couponInfo);
-        return { success: true, message: `Promo code ${code} applied successfully!` };
-      } else {
-        return { success: false, message: data.message || 'Invalid coupon code' };
+      const res = await fetch(`${API_BASE}/auth/addresses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ title, areaId, landmark, fullAddress })
+      });
+      if (res.ok) {
+        await fetchProfileData();
+        return true;
       }
+      return false;
     } catch (err) {
-      return { success: false, message: 'Server connection error. Failed to validate coupon.' };
+      return false;
     }
   };
 
-  const removeCouponCode = () => {
-    setAppliedCoupon(null);
+  const deleteAddress = async (id: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/addresses/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        await fetchProfileData();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  };
+
+  // v2 Favorites Operations
+  const toggleFavorite = async (itemId: string) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/auth/favorites/${itemId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        await fetchProfileData();
+      }
+    } catch (err) {
+      console.log('Error toggling favorite item');
+    }
   };
 
   const toggleLanguage = (lang: 'en' | 'ur') => {
@@ -163,13 +271,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         token,
         loginUser,
         logoutUser,
-        appliedCoupon,
-        applyCouponCode,
-        removeCouponCode,
         language,
         setLanguage: toggleLanguage,
         isCartOpen,
         setIsCartOpen,
+        addresses,
+        addAddress,
+        deleteAddress,
+        favorites,
+        toggleFavorite,
+        deliveryAreas,
+        loadDeliveryAreas
       }}
     >
       {children}

@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { prisma } from '../config/db';
 import { AuthRequest } from '../middlewares/authMiddleware';
-import { NotificationService } from '../services/notificationService';
+import { NotificationService, OrderNotificationData } from '../services/notificationService';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -24,21 +24,31 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
     items, // Array of { menuItemId, quantity }
     deliveryAddress,
     nearestLandmark,
-    area,
+    areaId,
     instructions,
-    couponCode,
-    paymentMethod, // "COD", "JAZZCASH", "EASYPAISA", "CARD"
+    paymentMethod, // "COD", "JAZZCASH", "CARD"
     customerName,
     customerPhone,
+    whatsappNumber
   } = req.body;
 
-  if (!items || items.length === 0 || !deliveryAddress || !area || !customerName || !customerPhone) {
+  if (!items || items.length === 0 || !deliveryAddress || !areaId || !customerName || !customerPhone) {
     return res.status(400).json({ message: 'Missing required checkout information' });
   }
 
   try {
-    // 1. Calculate values
-    let totalAmount = 0;
+    // 1. Verify Delivery Area
+    const deliveryArea = await prisma.deliveryArea.findUnique({ where: { id: areaId } });
+    if (!deliveryArea) {
+      return res.status(404).json({ message: 'Selected delivery area not found' });
+    }
+
+    if (!deliveryArea.available) {
+      return res.status(400).json({ message: `Delivery to ${deliveryArea.name} is currently closed.` });
+    }
+
+    // 2. Calculate values
+    let subtotal = 0;
     const orderItemsData = [];
     const notificationItems = [];
 
@@ -48,8 +58,12 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
         return res.status(404).json({ message: `Menu item ${item.menuItemId} not found` });
       }
 
+      if (!dbItem.available) {
+        return res.status(400).json({ message: `Dish '${dbItem.name}' is currently sold out.` });
+      }
+
       const itemPriceAfterDiscount = dbItem.price * (1 - dbItem.discount / 100);
-      totalAmount += itemPriceAfterDiscount * item.quantity;
+      subtotal += itemPriceAfterDiscount * item.quantity;
 
       orderItemsData.push({
         menuItemId: dbItem.id,
@@ -64,28 +78,21 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Apply Coupon if valid
-    let discountAmount = 0;
-    if (couponCode) {
-      const coupon = await prisma.coupon.findUnique({
-        where: { code: couponCode.toUpperCase() },
+    // Check Minimum Order Amount
+    if (subtotal < deliveryArea.minOrderAmount) {
+      return res.status(400).json({
+        message: `Minimum order amount of Rs. ${deliveryArea.minOrderAmount} is required for ${deliveryArea.name}. Your current total is Rs. ${subtotal}.`
       });
-
-      if (coupon && coupon.active && new Date() < coupon.expiresAt) {
-        discountAmount = totalAmount * (coupon.discountPercent / 100);
-        if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
-          discountAmount = coupon.maxDiscount;
-        }
-        totalAmount = Math.max(0, totalAmount - discountAmount);
-      }
     }
 
-    const deliveryCharge = 150; // Default Rs. 150 for Karachi
+    const deliveryCharge = deliveryArea.deliveryCharge;
     const taxRate = 0.13; // 13% GST
-    const tax = parseFloat((totalAmount * taxRate).toFixed(2));
-    const finalAmount = parseFloat((totalAmount + deliveryCharge + tax).toFixed(2));
+    const tax = parseFloat((subtotal * taxRate).toFixed(2));
+    const finalAmount = parseFloat((subtotal + deliveryCharge + tax).toFixed(2));
 
-    const orderNumber = `ZY-${Math.floor(100000 + Math.random() * 900000)}`;
+    // Generate ZYF-XXXXXX sequential order number
+    const count = await prisma.order.count();
+    const orderNumber = `ZYF-${String(count + 1).padStart(6, '0')}`;
 
     // Create Order
     const order = await prisma.order.create({
@@ -93,14 +100,14 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
         orderNumber,
         userId: req.user ? req.user.id : null,
         status: 'PENDING',
-        totalAmount,
+        subtotal,
         deliveryCharge,
         tax,
         finalAmount,
         paymentMethod,
         deliveryAddress,
         nearestLandmark,
-        area,
+        areaId: deliveryArea.id,
         instructions,
         items: {
           create: orderItemsData,
@@ -113,30 +120,18 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    // 2. Add Loyalty points (Rs. 100 spent = 1 point)
-    if (req.user) {
-      const pointsEarned = Math.floor(finalAmount / 100);
-      await prisma.user.update({
-        where: { id: req.user.id },
-        data: {
-          loyaltyPoints: {
-            increment: pointsEarned,
-          },
-        },
-      });
-    }
-
     // 3. Trigger Mock Notifications
-    const notificationData = {
+    const notificationData: OrderNotificationData = {
       orderNumber,
       customerName,
       phone: customerPhone,
+      whatsapp: whatsappNumber || undefined,
       address: deliveryAddress,
-      area,
-      landmark: nearestLandmark,
+      area: deliveryArea.name,
+      landmark: nearestLandmark || undefined,
       paymentMethod,
       items: notificationItems,
-      totalAmount,
+      totalAmount: subtotal,
       deliveryCharge,
       tax,
       finalAmount,
@@ -146,7 +141,7 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
     // Generate WhatsApp click to chat link
     const whatsappLink = NotificationService.getWhatsAppApiLink(notificationData);
 
-    // Save Mock Emails
+    // Save Mock Emails (Confirmations)
     const customerEmailHtml = NotificationService.generateEmailTemplate('CONFIRMATION', notificationData);
     const adminEmailHtml = NotificationService.generateEmailTemplate('ADMIN_ALERT', notificationData);
 
@@ -173,6 +168,7 @@ export const getOrderById = async (req: AuthRequest, res: Response) => {
         items: {
           include: { menuItem: true },
         },
+        area: true
       },
     });
 
@@ -198,6 +194,7 @@ export const getUserOrders = async (req: AuthRequest, res: Response) => {
         items: {
           include: { menuItem: true },
         },
+        area: true
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -210,7 +207,7 @@ export const getUserOrders = async (req: AuthRequest, res: Response) => {
 
 export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const { status } = req.body; // PENDING, CONFIRMED, PREPARING, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
+  const { status } = req.body; // PENDING, ACCEPTED, PREPARING, READY, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
 
   if (!status) {
     return res.status(400).json({ message: 'Status is required' });
@@ -219,11 +216,12 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
   try {
     const order = await prisma.order.update({
       where: { id },
-      data: { status },
+      data: { status: status.toUpperCase() },
       include: {
         items: {
           include: { menuItem: true },
         },
+        area: true
       },
     });
 
@@ -233,7 +231,7 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
       customerName: order.userId ? 'Valued Customer' : 'Customer',
       phone: 'Customer Phone',
       address: order.deliveryAddress,
-      area: order.area,
+      area: order.area ? order.area.name : 'Delivery Area',
       landmark: order.nearestLandmark || undefined,
       paymentMethod: order.paymentMethod,
       items: order.items.map((i) => ({
@@ -241,16 +239,17 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
         quantity: i.quantity,
         price: i.price,
       })),
-      totalAmount: order.totalAmount,
+      totalAmount: order.subtotal,
       deliveryCharge: order.deliveryCharge,
       tax: order.tax,
       finalAmount: order.finalAmount,
     };
 
-    if (status === 'PREPARING') {
+    const statusUpper = status.toUpperCase();
+    if (statusUpper === 'PREPARING') {
       const emailHtml = NotificationService.generateEmailTemplate('READY', notificationData);
       saveMockEmail(`order_${order.orderNumber}_ready_status.html`, emailHtml);
-    } else if (status === 'DELIVERED') {
+    } else if (statusUpper === 'DELIVERED') {
       const emailHtml = NotificationService.generateEmailTemplate('DELIVERED', notificationData);
       saveMockEmail(`order_${order.orderNumber}_delivered_status.html`, emailHtml);
     }
@@ -268,6 +267,7 @@ export const getAdminOrders = async (req: AuthRequest, res: Response) => {
         items: {
           include: { menuItem: true },
         },
+        area: true
       },
       orderBy: { createdAt: 'desc' },
     });

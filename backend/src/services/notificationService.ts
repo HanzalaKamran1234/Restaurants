@@ -23,24 +23,22 @@ export class NotificationService {
    */
   public static generateWhatsAppMessage(order: OrderNotificationData): string {
     const itemsList = order.items
-      .map((item, idx) => `${idx + 1}. *${item.name}* x ${item.quantity} - Rs. ${item.price * item.quantity}`)
+      .map((item) => `${item.quantity} × ${item.name}`)
       .join('\n');
 
-    const msg = `✨ *NEW ORDER PLACED - ZIYAFAT (ضیافت)* ✨\n\n` +
-      `*Order #:* ${order.orderNumber}\n` +
-      `*Customer:* ${order.customerName}\n` +
-      `*Phone/WA:* ${order.phone}\n` +
-      `*Area:* ${order.area}\n` +
-      `*Address:* ${order.address}\n` +
-      (order.landmark ? `*Landmark:* ${order.landmark}\n` : '') +
-      `\n*--- ITEMS ORDERED ---*\n${itemsList}\n\n` +
-      `*Subtotal:* Rs. ${order.totalAmount}\n` +
-      `*Delivery Charge:* Rs. ${order.deliveryCharge}\n` +
-      `*GST / Tax:* Rs. ${order.tax}\n` +
-      `*GRAND TOTAL:* Rs. ${order.finalAmount}\n\n` +
-      `*Payment Method:* ${order.paymentMethod}\n` +
-      (order.instructions ? `*Special Notes:* ${order.instructions}\n` : '') +
-      `\nThank you for choosing Ziyafat! 🍽️`;
+    let paymentLabel = 'Cash on Delivery';
+    if (order.paymentMethod === 'JAZZCASH') paymentLabel = 'JazzCash / EasyPaisa';
+    else if (order.paymentMethod === 'CARD') paymentLabel = 'Credit / Debit Card';
+
+    const msg = `NEW ORDER\n\n` +
+      `Order ID: ${order.orderNumber}\n\n` +
+      `Customer:\n${order.customerName}\n\n` +
+      `Phone:\n${order.phone}\n\n` +
+      `Address:\n${order.address}, ${order.area}${order.landmark ? ` (Landmark: ${order.landmark})` : ''}\n\n` +
+      `Items:\n${itemsList}\n\n` +
+      `Payment:\n${paymentLabel}\n\n` +
+      `Total:\nRs. ${order.finalAmount}\n\n` +
+      `Customer Notes:\n${order.instructions || 'None'}`;
 
     return msg;
   }

@@ -97,16 +97,17 @@ export default function TrackOrderDetails({ params }: { params: { id: string } }
     );
   }
 
-  const statuses = ["PENDING", "CONFIRMED", "PREPARING", "OUT_FOR_DELIVERY", "DELIVERED"];
+  const statuses = ["PENDING", "ACCEPTED", "PREPARING", "READY", "OUT_FOR_DELIVERY", "DELIVERED"];
   const currentStatusIdx = statuses.indexOf(order.status.toUpperCase());
 
   const getStatusLabel = (status: string) => {
     switch (status.toUpperCase()) {
-      case "PENDING": return t.orderStatusPending;
-      case "CONFIRMED": return t.orderStatusConfirmed;
-      case "PREPARING": return t.orderStatusPreparing;
-      case "OUT_FOR_DELIVERY": return t.orderStatusOut;
-      case "DELIVERED": return t.orderStatusDelivered;
+      case "PENDING": return "Awaiting kitchen confirmation";
+      case "ACCEPTED": return "Order accepted by chef";
+      case "PREPARING": return "In kitchen preparation";
+      case "READY": return "Prepared and packaged";
+      case "OUT_FOR_DELIVERY": return "Rider dispatched";
+      case "DELIVERED": return "Delivered & ready to feast";
       default: return status;
     }
   };
@@ -212,8 +213,8 @@ export default function TrackOrderDetails({ params }: { params: { id: string } }
                 <div 
                   className="absolute h-9 w-9 rounded-full bg-primary border-2 border-gold flex items-center justify-center text-white shadow-lg shadow-primary/30 animate-pulse transition-all duration-1000"
                   style={{
-                    left: `${currentStatusIdx === 0 ? 55 : currentStatusIdx === 1 ? 130 : currentStatusIdx === 2 ? 220 : 380}px`,
-                    top: `${currentStatusIdx === 0 ? 135 : currentStatusIdx === 1 ? 75 : currentStatusIdx === 2 ? 100 : 75}px`,
+                    left: `${currentStatusIdx === 0 ? 55 : currentStatusIdx === 1 ? 110 : currentStatusIdx === 2 ? 180 : currentStatusIdx === 3 ? 250 : currentStatusIdx === 4 ? 340 : 380}px`,
+                    top: `${currentStatusIdx === 0 ? 135 : currentStatusIdx === 1 ? 95 : currentStatusIdx === 2 ? 65 : currentStatusIdx === 3 ? 100 : currentStatusIdx === 4 ? 85 : 75}px`,
                   }}
                 >
                   <Truck size={14} />

@@ -3,31 +3,24 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { translations } from '../../utils/translations';
-import { CreditCard, MapPin, Phone, User, Landmark, Tag, CheckCircle2, MessageSquare } from 'lucide-react';
+import { CreditCard, MapPin, Phone, User, Landmark, CheckCircle2, MessageSquare, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
-
-const KARACHI_AREAS = [
-  "North Nazimabad",
-  "Gulshan-e-Iqbal",
-  "Clifton",
-  "DHA",
-  "Federal B Area",
-  "Gulberg",
-  "Bahadurabad",
-  "PECHS"
-];
 
 export default function Checkout() {
   const {
     cart,
     clearCart,
-    appliedCoupon,
     language,
     user,
-    token
+    token,
+    addresses,
+    deliveryAreas
   } = useApp();
 
   const t = translations[language];
+
+  // Selected saved address ID (or 'custom')
+  const [selectedAddressId, setSelectedAddressId] = useState('custom');
 
   // Form Fields
   const [name, setName] = useState('');
@@ -35,7 +28,7 @@ export default function Checkout() {
   const [whatsapp, setWhatsapp] = useState('');
   const [address, setAddress] = useState('');
   const [landmark, setLandmark] = useState('');
-  const [area, setArea] = useState(KARACHI_AREAS[0]);
+  const [selectedAreaId, setSelectedAreaId] = useState('');
   const [instructions, setInstructions] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('COD'); // COD, JAZZCASH, CARD
 
@@ -51,13 +44,32 @@ export default function Checkout() {
       setName(user.name);
       setPhone(user.phone || '');
       setWhatsapp(user.whatsapp || '');
-      if (user.addresses && user.addresses.length > 0) {
-        setAddress(user.addresses[0].fullAddress);
-        setArea(user.addresses[0].area);
-        setLandmark(user.addresses[0].landmark || '');
-      }
     }
   }, [user]);
+
+  // Set default area on load
+  useEffect(() => {
+    if (deliveryAreas.length > 0) {
+      setSelectedAreaId(deliveryAreas[0].id);
+    }
+  }, [deliveryAreas]);
+
+  // Handle saved address change selection
+  const handleAddressChange = (id: string) => {
+    setSelectedAddressId(id);
+    if (id === 'custom') {
+      setAddress('');
+      setLandmark('');
+      if (deliveryAreas.length > 0) setSelectedAreaId(deliveryAreas[0].id);
+    } else {
+      const selected = addresses.find(addr => addr.id === id);
+      if (selected) {
+        setAddress(selected.fullAddress);
+        setLandmark(selected.landmark || '');
+        setSelectedAreaId(selected.areaId);
+      }
+    }
+  };
 
   if (cart.length === 0 && !createdOrder) {
     return (
@@ -77,23 +89,30 @@ export default function Checkout() {
     return sum + finalPrice * item.quantity;
   }, 0);
 
-  let discountAmount = 0;
-  if (appliedCoupon) {
-    discountAmount = subtotal * (appliedCoupon.discountPercent / 100);
-    if (appliedCoupon.maxDiscount && discountAmount > appliedCoupon.maxDiscount) {
-      discountAmount = appliedCoupon.maxDiscount;
-    }
-  }
+  // Active delivery area configurations
+  const activeArea = deliveryAreas.find(a => a.id === selectedAreaId) || deliveryAreas[0];
+  const deliveryCharge = activeArea ? activeArea.deliveryCharge : 150;
+  const minOrderAmount = activeArea ? activeArea.minOrderAmount : 300;
+  const isAreaOpen = activeArea ? activeArea.available : true;
+  const isMinOrderMet = subtotal >= minOrderAmount;
 
-  const netSubtotal = Math.max(0, subtotal - discountAmount);
-  const deliveryCharge = 150;
-  const tax = Math.round(netSubtotal * 0.13); // 13% GST
-  const grandTotal = netSubtotal + deliveryCharge + tax;
+  const tax = Math.round(subtotal * 0.13); // 13% GST
+  const grandTotal = subtotal + deliveryCharge + tax;
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phone || !address) {
-      setErrorMessage('Please fill in Name, Phone, and Complete Address.');
+    if (!name || !phone || !address || !selectedAreaId) {
+      setErrorMessage('Please fill in Name, Phone, Area, and Complete Address.');
+      return;
+    }
+
+    if (!isMinOrderMet) {
+      setErrorMessage(`Minimum order of Rs. ${minOrderAmount} is required for this area.`);
+      return;
+    }
+
+    if (!isAreaOpen) {
+      setErrorMessage(`Delivery to this area is currently closed.`);
       return;
     }
 
@@ -104,12 +123,12 @@ export default function Checkout() {
       items: cart.map((i) => ({ menuItemId: i.id, quantity: i.quantity })),
       deliveryAddress: address,
       nearestLandmark: landmark || undefined,
-      area,
+      areaId: selectedAreaId,
       instructions: instructions || undefined,
-      couponCode: appliedCoupon ? appliedCoupon.code : undefined,
       paymentMethod,
       customerName: name,
       customerPhone: phone,
+      whatsappNumber: whatsapp || undefined
     };
 
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
@@ -159,9 +178,9 @@ export default function Checkout() {
           </p>
 
           <div className="bg-white/5 border border-white/5 p-4 rounded-xl text-xs text-text-muted space-y-2 text-left">
-            <div><strong>Order ID:</strong> {createdOrder.id}</div>
+            <div><strong>Order Reference:</strong> {createdOrder.orderNumber}</div>
             <div><strong>Grand Total:</strong> Rs. {createdOrder.finalAmount}</div>
-            <div><strong>Address:</strong> {createdOrder.deliveryAddress}, {createdOrder.area}</div>
+            <div><strong>Address:</strong> {createdOrder.deliveryAddress}</div>
           </div>
 
           <div className="space-y-3.5">
@@ -194,8 +213,9 @@ export default function Checkout() {
       <h1 className="text-2xl sm:text-4xl font-extrabold text-white mb-8">Secure Checkout</h1>
 
       {errorMessage && (
-        <div className="bg-primary/10 border border-primary/40 text-primary-light p-4 rounded-xl text-sm mb-6">
-          {errorMessage}
+        <div className="bg-primary/10 border border-primary/40 text-primary-light p-4 rounded-xl text-sm mb-6 flex items-center gap-2">
+          <AlertTriangle size={18} className="flex-shrink-0" />
+          <span>{errorMessage}</span>
         </div>
       )}
 
@@ -204,7 +224,59 @@ export default function Checkout() {
         {/* Checkout Form */}
         <form onSubmit={handleSubmitOrder} className="lg:col-span-7 space-y-6">
           
-          {/* Customer info */}
+          {/* Multiple Saved Addresses Picker */}
+          {user && addresses.length > 0 && (
+            <div className="glass p-6 rounded-2xl border border-white/5 space-y-4">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-white/10 pb-3">
+                <MapPin size={15} className="text-gold" />
+                <span>Choose Saved Address</span>
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {addresses.map((addr) => (
+                  <label
+                    key={addr.id}
+                    className={`p-3 rounded-xl border text-xs cursor-pointer flex flex-col justify-between transition-all ${
+                      selectedAddressId === addr.id ? 'border-primary bg-primary/5' : 'border-white/5 hover:border-white/15'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between font-bold text-white mb-1">
+                      <span>{addr.title}</span>
+                      <input
+                        type="radio"
+                        name="address-picker"
+                        checked={selectedAddressId === addr.id}
+                        onChange={() => handleAddressChange(addr.id)}
+                        className="accent-primary"
+                      />
+                    </div>
+                    <div className="text-text-muted truncate">{addr.fullAddress}</div>
+                    <div className="text-[10px] text-gold mt-1">{addr.area.name}</div>
+                  </label>
+                ))}
+
+                <label
+                  className={`p-3 rounded-xl border text-xs cursor-pointer flex flex-col justify-between transition-all ${
+                    selectedAddressId === 'custom' ? 'border-primary bg-primary/5' : 'border-white/5 hover:border-white/15'
+                  }`}
+                >
+                  <div className="flex items-center justify-between font-bold text-white mb-1">
+                    <span>Use Custom Address</span>
+                    <input
+                      type="radio"
+                      name="address-picker"
+                      checked={selectedAddressId === 'custom'}
+                      onChange={() => handleAddressChange('custom')}
+                      className="accent-primary"
+                    />
+                  </div>
+                  <div className="text-text-muted">Type new delivery address</div>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Contact details */}
           <div className="glass p-6 rounded-2xl border border-white/5 space-y-4">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-white/10 pb-3">
               <User size={15} className="text-gold" />
@@ -237,10 +309,10 @@ export default function Checkout() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-text-muted">WhatsApp Number (Optional - for order confirmations)</label>
+              <label className="text-xs text-text-muted">WhatsApp Number (For order details)</label>
               <input
                 type="text"
-                placeholder="e.g. +923001234567"
+                placeholder="e.g. 03331234567"
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-primary placeholder:text-text-muted"
@@ -248,11 +320,11 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* Delivery Location */}
+          {/* Delivery Address fields */}
           <div className="glass p-6 rounded-2xl border border-white/5 space-y-4">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-white/10 pb-3">
               <MapPin size={15} className="text-gold" />
-              <span>Delivery Details (Karachi)</span>
+              <span>Delivery Details</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -262,10 +334,11 @@ export default function Checkout() {
                   <Landmark size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
                   <input
                     type="text"
+                    disabled={selectedAddressId !== 'custom'}
                     placeholder={t.landmarkPlaceholder}
                     value={landmark}
                     onChange={(e) => setLandmark(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-3 py-2.5 text-xs text-white focus:outline-none focus:border-primary placeholder:text-text-muted"
+                    className="w-full bg-white/5 border border-white/10 disabled:opacity-50 rounded-lg pl-9 pr-3 py-2.5 text-xs text-white focus:outline-none focus:border-primary placeholder:text-text-muted"
                   />
                 </div>
               </div>
@@ -273,12 +346,13 @@ export default function Checkout() {
               <div className="space-y-1">
                 <label className="text-xs text-text-muted">Select Delivery Area</label>
                 <select
-                  value={area}
-                  onChange={(e) => setArea(e.target.value)}
-                  className="w-full bg-surface border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-primary"
+                  value={selectedAreaId}
+                  disabled={selectedAddressId !== 'custom'}
+                  onChange={(e) => setSelectedAreaId(e.target.value)}
+                  className="w-full bg-surface border border-white/10 disabled:opacity-50 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-primary"
                 >
-                  {KARACHI_AREAS.map((a) => (
-                    <option key={a} value={a}>{a}</option>
+                  {deliveryAreas.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
                   ))}
                 </select>
               </div>
@@ -289,15 +363,39 @@ export default function Checkout() {
               <textarea
                 required
                 rows={3}
+                disabled={selectedAddressId !== 'custom'}
                 placeholder={t.addressPlaceholder}
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-primary placeholder:text-text-muted resize-none"
+                className="w-full bg-white/5 border border-white/10 disabled:opacity-50 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-primary placeholder:text-text-muted resize-none"
               />
             </div>
 
+            {activeArea && (
+              <div className="bg-white/5 border border-white/5 p-4 rounded-xl text-xs space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Area Status:</span>
+                  <span className={isAreaOpen ? 'text-green-400 font-bold' : 'text-primary-light font-bold'}>
+                    {isAreaOpen ? 'Open & Taking Orders' : 'Delivery Currently Closed'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Minimum Spend Required:</span>
+                  <span className="text-white font-medium">Rs. {minOrderAmount}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Delivery Fare:</span>
+                  <span className="text-white font-medium">Rs. {deliveryCharge}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Estimated Delivery Time:</span>
+                  <span className="text-white font-medium">{activeArea.estimatedTime}</span>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-1">
-              <label className="text-xs text-text-muted">Special Chef / Rider Instructions</label>
+              <label className="text-xs text-text-muted">Special Instructions</label>
               <input
                 type="text"
                 placeholder={t.notesPlaceholder}
@@ -376,14 +474,8 @@ export default function Checkout() {
           <div className="border-t border-white/10 pt-4 space-y-2 text-xs text-text-muted">
             <div className="flex justify-between">
               <span>{t.subtotal}</span>
-              <span className="text-white">Rs. {Math.round(subtotal)}</span>
+              <span className="text-white font-semibold">Rs. {Math.round(subtotal)}</span>
             </div>
-            {discountAmount > 0 && (
-              <div className="flex justify-between text-primary-light">
-                <span>Coupon Discount ({appliedCoupon?.code})</span>
-                <span>- Rs. {Math.round(discountAmount)}</span>
-              </div>
-            )}
             <div className="flex justify-between">
               <span>{t.deliveryCharge}</span>
               <span className="text-white">Rs. {deliveryCharge}</span>
@@ -398,10 +490,18 @@ export default function Checkout() {
             </div>
           </div>
 
+          {/* Checkout Button with minimum order check validation */}
+          {!isMinOrderMet && activeArea && (
+            <div className="bg-primary/10 border border-primary/30 p-3.5 rounded-xl text-xs text-primary-light flex items-center gap-2">
+              <AlertTriangle size={15} />
+              <span>Minimum order of Rs. {minOrderAmount} is required for delivery here.</span>
+            </div>
+          )}
+
           <button
             onClick={handleSubmitOrder}
-            disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-light hover:to-primary text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all text-center focus:outline-none"
+            disabled={isSubmitting || !isMinOrderMet || !isAreaOpen}
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-light hover:to-primary disabled:opacity-50 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all text-center focus:outline-none"
           >
             <span>{isSubmitting ? 'Submitting Order...' : t.placeOrder}</span>
           </button>

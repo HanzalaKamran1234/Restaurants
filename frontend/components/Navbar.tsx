@@ -110,11 +110,6 @@ export const Navbar: React.FC = () => {
                       <div className="px-4 py-2 border-b border-white/10">
                         <p className="font-semibold text-white truncate">{user.name}</p>
                         <p className="text-xs text-text-muted truncate">{user.email}</p>
-                        <div className="mt-1 flex items-center gap-1.5">
-                          <span className="text-[10px] bg-gold/10 text-gold border border-gold/20 px-2 py-0.5 rounded-full font-bold">
-                            ✨ {user.loyaltyPoints} Points
-                          </span>
-                        </div>
                       </div>
                       
                       {user.role === 'ADMIN' && (

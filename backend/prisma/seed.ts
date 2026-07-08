@@ -5,19 +5,37 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Clean database
-  await prisma.coupon.deleteMany();
+  await prisma.websiteSettings.deleteMany();
+  await prisma.newsletterSubscriber.deleteMany();
+  await prisma.contactMessage.deleteMany();
   await prisma.review.deleteMany();
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
   await prisma.menuItem.deleteMany();
   await prisma.category.deleteMany();
-  await prisma.address.deleteMany();
+  await prisma.customerAddress.deleteMany();
+  await prisma.deliveryArea.deleteMany();
+  await prisma.adminUser.deleteMany();
   await prisma.user.deleteMany();
+
+  console.log('Database cleaned.');
+
+  // Create Delivery Areas
+  const northNazimabad = await prisma.deliveryArea.create({
+    data: {
+      name: 'North Nazimabad',
+      deliveryCharge: 150,
+      estimatedTime: '30 Mins',
+      minOrderAmount: 300,
+      available: true,
+    },
+  });
 
   // Create Users
   const adminPassword = await bcrypt.hash('admin123', 10);
   const customerPassword = await bcrypt.hash('customer123', 10);
 
+  // Admin in User table (compatibility)
   const admin = await prisma.user.create({
     data: {
       name: 'Ziyafat Admin',
@@ -29,26 +47,45 @@ async function main() {
     },
   });
 
-  const customer = await prisma.user.create({
+  // Separate AdminUser table record
+  await prisma.adminUser.create({
     data: {
-      name: 'Hamza Khan',
-      email: 'hamza@gmail.com',
-      password: customerPassword,
-      role: 'CUSTOMER',
-      phone: '+923339876543',
-      whatsapp: '+923339876543',
-      loyaltyPoints: 120,
+      username: 'ziyafat_admin',
+      email: 'admin@ziyafat.com',
+      password: adminPassword,
     },
   });
 
-  // Create Address for customer
-  await prisma.address.create({
+  const customer = await prisma.user.create({
+    data: {
+      name: 'Muhammad Ali',
+      email: 'ali@gmail.com',
+      password: customerPassword,
+      role: 'CUSTOMER',
+      phone: '03331234567',
+      whatsapp: '03331234567',
+    },
+  });
+
+  // Saved Address for customer
+  await prisma.customerAddress.create({
     data: {
       userId: customer.id,
-      area: 'North Nazimabad',
-      landmark: 'Near Shipowner College',
-      fullAddress: 'House A-102, Block L, North Nazimabad, Karachi',
+      title: 'Home',
+      areaId: northNazimabad.id,
+      landmark: 'Block H near Park',
+      fullAddress: 'House B-42, Block H, North Nazimabad, Karachi',
     },
+  });
+
+  // Website Settings
+  await prisma.websiteSettings.createMany({
+    data: [
+      { key: 'logo_text', value: 'ضیافت' },
+      { key: 'website_status', value: 'OPEN' },
+      { key: 'contact_phone', value: '03001234567' },
+      { key: 'contact_email', value: 'info@ziyafat.com' },
+    ],
   });
 
   // Create Categories
@@ -68,30 +105,6 @@ async function main() {
     },
   });
 
-  // Create Coupons
-  await prisma.coupon.createMany({
-    data: [
-      {
-        code: 'ZIYAFAT10',
-        discountPercent: 10,
-        maxDiscount: 200,
-        expiresAt: new Date('2028-12-31'),
-      },
-      {
-        code: 'WELCOME50',
-        discountPercent: 15,
-        maxDiscount: 500,
-        expiresAt: new Date('2028-12-31'),
-      },
-      {
-        code: 'FEAST25',
-        discountPercent: 25,
-        maxDiscount: 1000,
-        expiresAt: new Date('2028-12-31'),
-      },
-    ],
-  });
-
   // Menu items - FAST FOOD
   const fastFoodItems = [
     {
@@ -102,7 +115,7 @@ async function main() {
       spiceLevel: 'MILD',
       servingSize: '1 Person',
       price: 850,
-      discount: 10,
+      discount: 0,
       available: true,
       prepTime: 15,
       rating: 4.8,
@@ -110,7 +123,7 @@ async function main() {
       categoryId: fastFood.id,
     },
     {
-      name: 'Spicy Crunch Chicken Burger',
+      name: 'Zinger Burger',
       description: 'Extra crispy buttermilk fried chicken breast, spicy house glaze, creamy coleslaw, pickles, premium toasted bun.',
       ingredients: 'Fried Crispy Chicken, Spicy Glaze, Coleslaw, Pickles',
       calories: 690,
@@ -125,22 +138,7 @@ async function main() {
       categoryId: fastFood.id,
     },
     {
-      name: 'Spicy Buffalo Wings',
-      description: '8 pieces of crispy fried wings tossed in our signature tangy buffalo sauce, served with premium blue cheese dip.',
-      ingredients: 'Chicken Wings, Buffalo Sauce, Celery, Blue Cheese Dip',
-      calories: 520,
-      spiceLevel: 'SPICY',
-      servingSize: '1-2 Persons',
-      price: 490,
-      discount: 15,
-      available: true,
-      prepTime: 10,
-      rating: 4.9,
-      image: 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?auto=format&fit=crop&q=80&w=800',
-      categoryId: fastFood.id,
-    },
-    {
-      name: 'Premium Arabic Chicken Shawarma',
+      name: 'Shawarma',
       description: 'Slow-roasted chicken shavings, garlic toum sauce, pickled cucumbers wrapped in hand-stretched pita bread.',
       ingredients: 'Spiced Chicken, Garlic Toum, Pickles, Lebanese Pita',
       calories: 450,
@@ -154,49 +152,19 @@ async function main() {
       image: 'https://images.unsplash.com/photo-1561651823-34fed022540e?auto=format&fit=crop&q=80&w=800',
       categoryId: fastFood.id,
     },
-    {
-      name: 'Garlic Mayo Chicken Paratha Roll',
-      description: 'Charcoal grilled chicken tikka boti, creamy garlic mayo sauce, and sliced onions wrapped in a flaky golden paratha.',
-      ingredients: 'Chicken Boti, Garlic Mayo, Onion, Flaky Paratha',
-      calories: 580,
-      spiceLevel: 'MEDIUM',
-      servingSize: '1 Person',
-      price: 290,
-      discount: 5,
-      available: true,
-      prepTime: 10,
-      rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&q=80&w=800',
-      categoryId: fastFood.id,
-    },
-    {
-      name: 'Creamy Fettuccine Alfredo',
-      description: 'Rich and creamy parmesan sauce with sliced grilled chicken breast and fresh mushrooms over fettuccine pasta.',
-      ingredients: 'Fettuccine Pasta, Heavy Cream, Parmesan, Grilled Chicken, Mushrooms',
-      calories: 820,
-      spiceLevel: 'NONE',
-      servingSize: '1 Person',
-      price: 950,
-      discount: 0,
-      available: true,
-      prepTime: 20,
-      rating: 4.9,
-      image: 'https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&q=80&w=800',
-      categoryId: fastFood.id,
-    },
   ];
 
   // Menu items - DESI KHANY
   const desiItems = [
     {
-      name: 'Special Spicy Chicken Biryani',
+      name: 'Chicken Biryani',
       description: 'Karachi style aromatic basmati rice layered with spicy chicken masala, potatoes, saffron, and fresh mint leaves.',
       ingredients: 'Basmati Rice, Marinated Chicken, Saffron, Mint, Spices, Potatoes',
       calories: 650,
       spiceLevel: 'SPICY',
       servingSize: '1 Person',
       price: 390,
-      discount: 10,
+      discount: 0,
       available: true,
       prepTime: 15,
       rating: 4.9,
@@ -218,67 +186,9 @@ async function main() {
       image: 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&q=80&w=800',
       categoryId: desiKhany.id,
     },
-    {
-      name: 'Shahi Mutton Haleem',
-      description: 'Slow-cooked stew of barley, wheat, lentils, and shredded mutton, garnished with fried onions, ginger, and lemon.',
-      ingredients: 'Mutton, Barley, Wheat, Mixed Lentils, Fried Onions, Chaat Masala',
-      calories: 480,
-      spiceLevel: 'MEDIUM',
-      servingSize: '1 Person',
-      price: 380,
-      discount: 0,
-      available: true,
-      prepTime: 10,
-      rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=800',
-      categoryId: desiKhany.id,
-    },
-    {
-      name: 'Peshawari Chicken Karahi',
-      description: 'Bone-in chicken stir-fried with ripe tomatoes, garlic, ginger, and green chilies in a traditional iron wok.',
-      ingredients: 'Chicken, Tomatoes, Green Chilies, Ginger, Garlic',
-      calories: 710,
-      spiceLevel: 'MEDIUM',
-      servingSize: '2 Persons',
-      price: 1100,
-      discount: 10,
-      available: true,
-      prepTime: 25,
-      rating: 4.7,
-      image: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&q=80&w=800',
-      categoryId: desiKhany.id,
-    },
-    {
-      name: 'Traditional Dal Chawal',
-      description: 'Fragrant steamed basmati rice served with a buttery, cumin-tempered split yellow lentil mash, and home-style pickle.',
-      ingredients: 'Basmati Rice, Yellow Lentils, Cumin Tarka, Butter, Mango Pickle',
-      calories: 380,
-      spiceLevel: 'MILD',
-      servingSize: '1 Person',
-      price: 250,
-      discount: 0,
-      available: true,
-      prepTime: 10,
-      rating: 4.6,
-      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=800',
-      categoryId: desiKhany.id,
-    },
   ];
 
   await prisma.menuItem.createMany({ data: [...fastFoodItems, ...desiItems] });
-
-  // Add a sample review
-  const items = await prisma.menuItem.findMany();
-  if (items.length > 0) {
-    await prisma.review.create({
-      data: {
-        rating: 5,
-        comment: 'Absolutely amazing taste! Authentic spices, hot delivery.',
-        userId: customer.id,
-        menuItemId: items[0].id,
-      },
-    });
-  }
 
   console.log('Database seeded successfully.');
 }

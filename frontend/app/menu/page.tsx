@@ -202,7 +202,7 @@ const STATIC_MENU_ITEMS: MenuItem[] = [
 ];
 
 export default function Menu() {
-  const { language, addToCart } = useApp();
+  const { language, addToCart, favorites, toggleFavorite, token } = useApp();
   const t = translations[language];
 
   // Menu items state
@@ -467,6 +467,22 @@ export default function Menu() {
                         <span className="absolute top-3 left-3 bg-primary text-white text-[9px] font-bold px-2 py-0.5 rounded z-10">
                           -{item.discount}%
                         </span>
+                      )}
+
+                      {/* Favorite Heart Toggler */}
+                      {token && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(item.id);
+                          }}
+                          className="absolute top-3 right-3 p-1.5 bg-black/60 hover:bg-black border border-white/10 rounded-full text-primary-light z-10 focus:outline-none"
+                        >
+                          <Heart
+                            size={14}
+                            className={favorites.some((f) => f.id === item.id) ? "fill-current text-primary-light" : "text-white"}
+                          />
+                        </button>
                       )}
 
                       {/* Image */}

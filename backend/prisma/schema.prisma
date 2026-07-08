@@ -8,37 +8,60 @@ generator client {
 }
 
 model User {
-  id            String    @id @default(uuid())
+  id            String            @id @default(uuid())
   name          String
-  email         String    @unique
+  email         String            @unique
   password      String
-  role          String    @default("CUSTOMER") // "ADMIN", "CUSTOMER"
+  role          String            @default("CUSTOMER") // "ADMIN", "CUSTOMER"
   phone         String?
   whatsapp      String?
-  loyaltyPoints Int       @default(0)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  addresses     Address[]
+  googleId      String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  addresses     CustomerAddress[]
   orders        Order[]
   reviews       Review[]
+  favoriteItems MenuItem[]        @relation("UserFavorites")
 }
 
-model Address {
-  id          String   @id @default(uuid())
+model AdminUser {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+}
+
+model CustomerAddress {
+  id          String       @id @default(uuid())
+  title       String       @default("Home") // e.g. "Home", "Work"
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   landmark    String?
-  area        String   // e.g. "North Nazimabad", "Gulshan-e-Iqbal"
+  areaId      String
+  area        DeliveryArea @relation(fields: [areaId], references: [id])
   fullAddress String
-  createdAt   DateTime @default(now())
+  createdAt   DateTime     @default(now())
+}
+
+model DeliveryArea {
+  id             String            @id @default(uuid())
+  name           String            @unique // e.g. "North Nazimabad"
+  deliveryCharge Float             @default(150)
+  estimatedTime  String            @default("30 Mins")
+  minOrderAmount Float             @default(300)
+  available      Boolean           @default(true)
+  addresses      CustomerAddress[]
+  orders         Order[]
 }
 
 model Category {
-  id        String     @id @default(uuid())
-  name      String
-  slug      String     @unique
-  image     String
-  items     MenuItem[]
+  id    String     @id @default(uuid())
+  name  String
+  slug  String     @unique
+  image String
+  items MenuItem[]
 }
 
 model MenuItem {
@@ -50,7 +73,7 @@ model MenuItem {
   spiceLevel  String      @default("NONE") // "NONE", "MILD", "MEDIUM", "SPICY"
   servingSize String?     // e.g. "1 Person", "2-3 Persons"
   price       Float
-  discount    Float       @default(0) // Discount percentage (e.g. 10 for 10% off)
+  discount    Float       @default(0) // Discount percentage
   available   Boolean     @default(true)
   prepTime    Int         @default(15) // Prep time in minutes
   rating      Float       @default(4.5)
@@ -59,25 +82,27 @@ model MenuItem {
   category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   orderItems  OrderItem[]
   reviews     Review[]
+  favoritedBy User[]      @relation("UserFavorites")
 }
 
 model Order {
-  id              String      @id @default(uuid())
-  orderNumber     String      @unique
+  id              String       @id @default(uuid())
+  orderNumber     String       @unique // e.g. "ZYF-000001"
   userId          String?
-  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  status          String      @default("PENDING") // "PENDING", "CONFIRMED", "PREPARING", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"
-  totalAmount     Float
+  user            User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status          String       @default("PENDING") // "PENDING", "ACCEPTED", "PREPARING", "READY", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"
+  subtotal        Float
   deliveryCharge  Float
   tax             Float
   finalAmount     Float
-  paymentMethod   String      @default("COD") // "COD", "JAZZCASH", "EASYPAISA", "CARD"
+  paymentMethod   String       @default("COD") // "COD", "JAZZCASH", "EASYPAISA", "CARD"
   deliveryAddress String
   nearestLandmark String?
-  area            String
+  areaId          String?
+  area            DeliveryArea? @relation(fields: [areaId], references: [id], onDelete: SetNull)
   instructions    String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   items           OrderItem[]
 }
 
@@ -102,11 +127,25 @@ model Review {
   createdAt  DateTime @default(now())
 }
 
-model Coupon {
-  id              String   @id @default(uuid())
-  code            String   @unique
-  discountPercent Float
-  maxDiscount     Float?
-  active          Boolean  @default(true)
-  expiresAt       DateTime
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model WebsiteSettings {
+  id    String @id @default(uuid())
+  key   String @unique // e.g. "logo_text", "website_status"
+  value String
 }

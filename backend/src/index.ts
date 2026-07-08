@@ -5,8 +5,8 @@ import authRoutes from './routes/auth';
 import menuRoutes from './routes/menu';
 import categoryRoutes from './routes/categories';
 import orderRoutes from './routes/orders';
-import couponRoutes from './routes/coupons';
 import analyticsRoutes from './routes/analytics';
+import extraRoutes from './routes/extra';
 
 // Load environment variables
 dotenv.config();
@@ -23,8 +23,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/coupons', couponRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/extra', extraRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {
