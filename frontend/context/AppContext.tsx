@@ -9,6 +9,7 @@ export interface CartItem {
   discount: number;
   quantity: number;
   image: string;
+  size: string;
 }
 
 export interface DeliveryArea {
@@ -43,8 +44,8 @@ export interface User {
 interface AppContextType {
   cart: CartItem[];
   addToCart: (item: Omit<CartItem, 'quantity'>) => void;
-  removeFromCart: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  removeFromCart: (id: string, size: string) => void;
+  updateQuantity: (id: string, size: string, quantity: number) => void;
   clearCart: () => void;
   user: User | null;
   token: string | null;
@@ -160,25 +161,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addToCart = (item: Omit<CartItem, 'quantity'>) => {
     setCart((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
+      const existing = prev.find((i) => i.id === item.id && i.size === item.size);
       if (existing) {
-        return prev.map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i));
+        return prev.map((i) => (i.id === item.id && i.size === item.size ? { ...i, quantity: i.quantity + 1 } : i));
       }
       return [...prev, { ...item, quantity: 1 }];
     });
     setIsCartOpen(true);
   };
 
-  const removeFromCart = (id: string) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
+  const removeFromCart = (id: string, size: string) => {
+    setCart((prev) => prev.filter((item) => !(item.id === id && item.size === size)));
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = (id: string, size: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(id);
+      removeFromCart(id, size);
       return;
     }
-    setCart((prev) => prev.map((item) => (item.id === id ? { ...item, quantity } : item)));
+    setCart((prev) => prev.map((item) => (item.id === id && item.size === size ? { ...item, quantity } : item)));
   };
 
   const clearCart = () => {

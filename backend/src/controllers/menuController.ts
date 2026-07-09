@@ -116,6 +116,7 @@ export const createMenuItem = async (req: Request, res: Response) => {
     available,
     prepTime,
     image,
+    sizes,
     categoryId,
   } = req.body;
 
@@ -124,6 +125,8 @@ export const createMenuItem = async (req: Request, res: Response) => {
   }
 
   try {
+    const serializedSizes = typeof sizes === 'object' ? JSON.stringify(sizes) : (sizes || '[]');
+
     const item = await prisma.menuItem.create({
       data: {
         name,
@@ -137,6 +140,7 @@ export const createMenuItem = async (req: Request, res: Response) => {
         available: available !== undefined ? Boolean(available) : true,
         prepTime: prepTime ? parseInt(prepTime) : 15,
         image,
+        sizes: serializedSizes,
         categoryId,
       },
     });
@@ -157,6 +161,10 @@ export const updateMenuItem = async (req: Request, res: Response) => {
     if (data.calories !== undefined) data.calories = data.calories ? parseInt(data.calories) : null;
     if (data.prepTime !== undefined) data.prepTime = parseInt(data.prepTime);
     if (data.available !== undefined) data.available = Boolean(data.available);
+
+    if (data.sizes !== undefined) {
+      data.sizes = typeof data.sizes === 'object' ? JSON.stringify(data.sizes) : data.sizes;
+    }
 
     const item = await prisma.menuItem.update({
       where: { id },

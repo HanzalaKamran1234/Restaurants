@@ -115,9 +115,10 @@ export default function ProfileDashboard() {
       addToCart({
         id: oi.menuItem.id,
         name: oi.menuItem.name,
-        price: oi.menuItem.price,
+        price: oi.price, // use price of the size they ordered!
         discount: oi.menuItem.discount,
-        image: oi.menuItem.image
+        image: oi.menuItem.image,
+        size: oi.size || 'Regular'
       });
     });
     // Redirect to checkout
@@ -359,7 +360,7 @@ export default function ProfileDashboard() {
                           <span className="text-[10px] text-text-muted mt-0.5 block">Rs. {item.price}</span>
                         </div>
                         <button
-                          onClick={() => addToCart({ id: item.id, name: item.name, price: item.price, discount: item.discount, image: item.image })}
+                          onClick={() => addToCart({ id: item.id, name: item.name, price: item.price, discount: item.discount, image: item.image, size: 'Regular' })}
                           className="flex items-center gap-1 text-primary-light font-bold text-[10px] hover:text-white"
                         >
                           <span>Add to Cart</span>

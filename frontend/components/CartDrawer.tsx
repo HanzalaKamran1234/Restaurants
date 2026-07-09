@@ -74,7 +74,7 @@ export const CartDrawer: React.FC = () => {
               cart.map((item) => {
                 const finalPrice = item.price * (1 - item.discount / 100);
                 return (
-                  <div key={item.id} className="flex gap-4 p-3 rounded-xl bg-white/5 border border-white/5 relative group hover:border-primary/20 transition-all">
+                  <div key={`${item.id}-${item.size}`} className="flex gap-4 p-3 rounded-xl bg-white/5 border border-white/5 relative group hover:border-primary/20 transition-all">
                     {/* Item Image */}
                     <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-white/10 bg-surface">
                       <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
@@ -84,7 +84,10 @@ export const CartDrawer: React.FC = () => {
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
                         <div className="flex justify-between">
-                          <h4 className="text-sm font-semibold text-white group-hover:text-primary transition-colors">{item.name}</h4>
+                          <h4 className="text-sm font-semibold text-white group-hover:text-primary transition-colors flex flex-col">
+                            <span>{item.name}</span>
+                            <span className="text-[10px] text-gold font-normal">Size: {item.size}</span>
+                          </h4>
                           <span className="text-sm font-bold text-white pl-2">Rs. {Math.round(finalPrice * item.quantity)}</span>
                         </div>
                         {item.discount > 0 && (
@@ -99,21 +102,21 @@ export const CartDrawer: React.FC = () => {
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center space-x-1.5 bg-black/40 border border-white/10 rounded-full px-2 py-0.5">
                           <button
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
                             className="text-text-muted hover:text-white p-1"
                           >
                             <Minus size={13} />
                           </button>
                           <span className="text-xs font-semibold px-1.5 text-white">{item.quantity}</span>
                           <button
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
                             className="text-text-muted hover:text-white p-1"
                           >
                             <Plus size={13} />
                           </button>
                         </div>
                         <button
-                          onClick={() => removeFromCart(item.id)}
+                          onClick={() => removeFromCart(item.id, item.size)}
                           className="text-text-muted hover:text-primary transition-colors p-1"
                         >
                           <Trash2 size={15} />

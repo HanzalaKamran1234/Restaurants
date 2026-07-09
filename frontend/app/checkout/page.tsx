@@ -131,7 +131,7 @@ export default function Checkout() {
     setErrorMessage('');
 
     const payload = {
-      items: cart.map((i) => ({ menuItemId: i.id, quantity: i.quantity })),
+      items: cart.map((i) => ({ menuItemId: i.id, quantity: i.quantity, size: i.size })),
       deliveryAddress: address,
       nearestLandmark: landmark || undefined,
       areaId: selectedAreaId,
@@ -471,10 +471,12 @@ export default function Checkout() {
             {cart.map((item) => {
               const itemPrice = item.price * (1 - item.discount / 100);
               return (
-                <div key={item.id} className="flex justify-between items-center gap-4 text-xs">
+                <div key={`${item.id}-${item.size}`} className="flex justify-between items-center gap-4 text-xs">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-primary-light">{item.quantity}x</span>
-                    <span className="text-white font-medium">{item.name}</span>
+                    <span className="text-white font-medium">
+                      {item.name} <span className="text-gold font-normal">({item.size})</span>
+                    </span>
                   </div>
                   <span className="text-white">Rs. {Math.round(itemPrice * item.quantity)}</span>
                 </div>

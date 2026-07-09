@@ -9,8 +9,8 @@ interface MenuItem {
   id: string;
   name: string;
   description: string;
-  ingredients: string;
-  calories: number;
+  ingredients?: string;
+  calories?: number;
   spiceLevel: string;
   servingSize: string;
   price: number;
@@ -20,194 +20,21 @@ interface MenuItem {
   rating: number;
   image: string;
   categoryId: string;
+  sizes?: string;
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
 }
-
-const STATIC_MENU_ITEMS: MenuItem[] = [
-  {
-    id: "f1",
-    name: "Ziyafat Royal Beef Burger",
-    description: "Gourmet smashed double beef patties, melted cheddar, caramelized onions, house truffle mayo in a toasted brioche bun.",
-    ingredients: "Double Beef Patty, Cheddar Cheese, Brioche Bun, Truffle Mayo, Caramelized Onions",
-    calories: 780,
-    spiceLevel: "MILD",
-    servingSize: "1 Person",
-    price: 850,
-    discount: 10,
-    available: true,
-    prepTime: 15,
-    rating: 4.8,
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800",
-    categoryId: "cat-fast"
-  },
-  {
-    id: "f2",
-    name: "Spicy Crunch Chicken Burger",
-    description: "Extra crispy buttermilk fried chicken breast, spicy house glaze, creamy coleslaw, pickles, premium toasted bun.",
-    ingredients: "Fried Crispy Chicken, Spicy Glaze, Coleslaw, Pickles",
-    calories: 690,
-    spiceLevel: "SPICY",
-    servingSize: "1 Person",
-    price: 690,
-    discount: 0,
-    available: true,
-    prepTime: 12,
-    rating: 4.7,
-    image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&q=80&w=800",
-    categoryId: "cat-fast"
-  },
-  {
-    id: "f3",
-    name: "Spicy Buffalo Wings",
-    description: "8 pieces of crispy fried wings tossed in our signature tangy buffalo sauce, served with premium blue cheese dip.",
-    ingredients: "Chicken Wings, Buffalo Sauce, Celery, Blue Cheese Dip",
-    calories: 520,
-    spiceLevel: "SPICY",
-    servingSize: "1-2 Persons",
-    price: 490,
-    discount: 15,
-    available: true,
-    prepTime: 10,
-    rating: 4.9,
-    image: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?auto=format&fit=crop&q=80&w=800",
-    categoryId: "cat-fast"
-  },
-  {
-    id: "f4",
-    name: "Premium Arabic Chicken Shawarma",
-    description: "Slow-roasted chicken shavings, garlic toum sauce, pickled cucumbers wrapped in hand-stretched pita bread.",
-    ingredients: "Spiced Chicken, Garlic Toum, Pickles, Lebanese Pita",
-    calories: 450,
-    spiceLevel: "MILD",
-    servingSize: "1 Person",
-    price: 320,
-    discount: 0,
-    available: true,
-    prepTime: 8,
-    rating: 4.6,
-    image: "https://images.unsplash.com/photo-1561651823-34fed022540e?auto=format&fit=crop&q=80&w=800",
-    categoryId: "cat-fast"
-  },
-  {
-    id: "f5",
-    name: "Garlic Mayo Chicken Paratha Roll",
-    description: "Charcoal grilled chicken tikka boti, creamy garlic mayo sauce, and sliced onions wrapped in a flaky golden paratha.",
-    ingredients: "Chicken Boti, Garlic Mayo, Onion, Flaky Paratha",
-    calories: 580,
-    spiceLevel: "MEDIUM",
-    servingSize: "1 Person",
-    price: 290,
-    discount: 5,
-    available: true,
-    prepTime: 10,
-    rating: 4.8,
-    image: "https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&q=80&w=800",
-    categoryId: "cat-fast"
-  },
-  {
-    id: "f6",
-    name: "Creamy Fettuccine Alfredo",
-    description: "Rich and creamy parmesan sauce with sliced grilled chicken breast and fresh mushrooms over fettuccine pasta.",
-    ingredients: "Fettuccine Pasta, Heavy Cream, Parmesan, Grilled Chicken, Mushrooms",
-    calories: 820,
-    spiceLevel: "NONE",
-    servingSize: "1 Person",
-    price: 950,
-    discount: 0,
-    available: true,
-    prepTime: 20,
-    rating: 4.9,
-    image: "https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&q=80&w=800",
-    categoryId: "cat-fast"
-  },
-  {
-    id: "d1",
-    name: "Special Spicy Chicken Biryani",
-    description: "Karachi style aromatic basmati rice layered with spicy chicken masala, potatoes, saffron, and fresh mint leaves.",
-    ingredients: "Basmati Rice, Marinated Chicken, Saffron, Mint, Spices, Potatoes",
-    calories: 650,
-    spiceLevel: "SPICY",
-    servingSize: "1 Person",
-    price: 390,
-    discount: 10,
-    available: true,
-    prepTime: 15,
-    rating: 4.9,
-    image: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&q=80&w=800",
-    categoryId: "cat-desi"
-  },
-  {
-    id: "d2",
-    name: "Desi Ghee Mutton Karahi",
-    description: "Premium mutton cooked in pure desi ghee with tomatoes, green chilies, ginger, and freshly crushed black pepper.",
-    ingredients: "Mutton, Desi Ghee, Tomatoes, Ginger, Green Chilies, Black Pepper",
-    calories: 920,
-    spiceLevel: "SPICY",
-    servingSize: "2-3 Persons",
-    price: 2400,
-    discount: 0,
-    available: true,
-    prepTime: 30,
-    rating: 5.0,
-    image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&q=80&w=800",
-    categoryId: "cat-desi"
-  },
-  {
-    id: "d3",
-    name: "Shahi Mutton Haleem",
-    description: "Slow-cooked stew of barley, wheat, lentils, and shredded mutton, garnished with fried onions, ginger, and lemon.",
-    ingredients: "Mutton, Barley, Wheat, Mixed Lentils, Fried Onions, Chaat Masala",
-    calories: 480,
-    spiceLevel: "MEDIUM",
-    servingSize: "1 Person",
-    price: 380,
-    discount: 0,
-    available: true,
-    prepTime: 10,
-    rating: 4.8,
-    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=800",
-    categoryId: "cat-desi"
-  },
-  {
-    id: "d4",
-    name: "Peshawari Chicken Karahi",
-    description: "Bone-in chicken stir-fried with ripe tomatoes, garlic, ginger, and green chilies in a traditional iron wok.",
-    ingredients: "Chicken, Tomatoes, Green Chilies, Ginger, Garlic",
-    calories: 710,
-    spiceLevel: "MEDIUM",
-    servingSize: "2 Persons",
-    price: 1100,
-    discount: 10,
-    available: true,
-    prepTime: 25,
-    rating: 4.7,
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&q=80&w=800",
-    categoryId: "cat-desi"
-  },
-  {
-    id: "d5",
-    name: "Traditional Dal Chawal",
-    description: "Fragrant steamed basmati rice served with a buttery, cumin-tempered split yellow lentil mash, and home-style pickle.",
-    ingredients: "Basmati Rice, Yellow Lentils, Cumin Tarka, Butter, Mango Pickle",
-    calories: 380,
-    spiceLevel: "MILD",
-    servingSize: "1 Person",
-    price: 250,
-    discount: 0,
-    available: true,
-    prepTime: 10,
-    rating: 4.6,
-    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=800",
-    categoryId: "cat-desi"
-  }
-];
 
 export default function Menu() {
   const { language, addToCart, favorites, toggleFavorite, token } = useApp();
   const t = translations[language];
 
   // Menu items state
-  const [items, setItems] = useState<MenuItem[]>(STATIC_MENU_ITEMS);
-  const [filteredItems, setFilteredItems] = useState<MenuItem[]>(STATIC_MENU_ITEMS);
+  const [items, setItems] = useState<MenuItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
 
   // Filters state
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -219,6 +46,10 @@ export default function Menu() {
   // Selected item modal detail
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [showFiltersMobile, setShowFiltersMobile] = useState<boolean>(false);
+
+  // Active Size / Price inside Modal
+  const [activeSize, setActiveSize] = useState<string>('Regular');
+  const [activePrice, setActivePrice] = useState<number>(0);
 
   // Sync parameters from URL on mount
   useEffect(() => {
@@ -232,32 +63,30 @@ export default function Menu() {
   }, []);
 
   // Fetch Menu from API
-  useEffect(() => {
+  const loadMenu = () => {
     fetch('http://localhost:5000/api/menu')
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
-          // Adjust backend IDs if mapping is needed, but model fields align perfectly
           setItems(data);
         }
       })
       .catch(() => {
-        console.log("Using static local items for menu listing");
+        console.log("Failed to load backend menu items, using fallback");
       });
+  };
+
+  useEffect(() => {
+    loadMenu();
   }, []);
 
   // Filter application logic
   useEffect(() => {
     let result = [...items];
 
-    // Category
+    // Category filter using category slug
     if (selectedCategory !== 'all') {
-      // Map 'fast-food' and 'desi-khany' to their internal categorizations
-      result = result.filter(item => {
-        if (selectedCategory === 'fast-food') return item.categoryId === 'cat-fast' || item.categoryId.includes('fast');
-        if (selectedCategory === 'desi-khany') return item.categoryId === 'cat-desi' || item.categoryId.includes('desi');
-        return true;
-      });
+      result = result.filter(item => item.category?.slug === selectedCategory);
     }
 
     // Search query
@@ -276,7 +105,7 @@ export default function Menu() {
       result = result.filter(item => item.spiceLevel.toLowerCase() === selectedSpice.toLowerCase());
     }
 
-    // Price limit
+    // Price limit (Uses first/default price of item)
     result = result.filter(item => {
       const finalPrice = item.price * (1 - item.discount / 100);
       return finalPrice <= maxPriceFilter;
@@ -293,6 +122,64 @@ export default function Menu() {
 
     setFilteredItems(result);
   }, [items, selectedCategory, searchQuery, selectedSpice, maxPriceFilter, sortBy]);
+
+  // Modal Open details helper
+  const handleOpenItem = (item: MenuItem) => {
+    setSelectedItem(item);
+    let defaultSize = 'Regular';
+    let defaultPrice = item.price;
+    if (item.sizes) {
+      try {
+        const parsed = JSON.parse(item.sizes);
+        if (parsed.length > 0) {
+          defaultSize = parsed[0].size;
+          defaultPrice = parsed[0].price;
+        }
+      } catch (e) {}
+    }
+    setActiveSize(defaultSize);
+    setActivePrice(defaultPrice);
+  };
+
+  // Add directly from card helper
+  const handleAddToCartDirect = (item: MenuItem) => {
+    let sizesList = [];
+    if (item.sizes) {
+      try {
+        sizesList = JSON.parse(item.sizes);
+      } catch (e) {}
+    }
+    if (sizesList.length > 1) {
+      handleOpenItem(item);
+    } else {
+      const sizeName = sizesList.length === 1 ? sizesList[0].size : 'Regular';
+      const sizePrice = sizesList.length === 1 ? sizesList[0].price : item.price;
+      addToCart({
+        id: item.id,
+        name: item.name,
+        price: sizePrice,
+        discount: item.discount,
+        image: item.image,
+        size: sizeName
+      });
+    }
+  };
+
+  const categoriesFilterList = [
+    { label: 'All Cuisines', slug: 'all' },
+    { label: 'Fast Food', slug: 'fast-food' },
+    { label: 'Burgers', slug: 'burgers' },
+    { label: 'Hot Wings', slug: 'hot-wings' },
+    { label: 'Shawarma', slug: 'shawarma' },
+    { label: 'Rolls', slug: 'paratha-roll' },
+    { label: 'Spring Rolls', slug: 'spring-rolls' },
+    { label: 'Samosa', slug: 'samosa' },
+    { label: 'Chicken Samosa', slug: 'chicken-samosa' },
+    { label: 'Sandwiches', slug: 'sandwiches' },
+    { label: 'Pasta', slug: 'pasta-macaroni' },
+    { label: 'Desi Cuisine', slug: 'desi-cuisine' },
+    { label: 'Karahi', slug: 'karahi' }
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 font-sans relative z-10">
@@ -348,18 +235,16 @@ export default function Menu() {
           {/* Categories select */}
           <div className="space-y-2.5">
             <label className="text-xs font-bold text-white uppercase">Categories</label>
-            <div className="flex flex-col gap-1.5 text-xs text-text-muted">
-              {['all', 'fast-food', 'desi-khany'].map((cat) => (
+            <div className="flex flex-col gap-1.5 text-xs text-text-muted max-h-72 overflow-y-auto pr-1">
+              {categoriesFilterList.map((cat) => (
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
+                  key={cat.slug}
+                  onClick={() => setSelectedCategory(cat.slug)}
                   className={`text-left px-3 py-2 rounded-lg transition-all ${
-                    selectedCategory === cat ? 'bg-primary text-white font-bold' : 'hover:bg-white/5 hover:text-white'
+                    selectedCategory === cat.slug ? 'bg-primary text-white font-bold' : 'hover:bg-white/5 hover:text-white'
                   }`}
                 >
-                  {cat === 'all' && 'All Cuisines'}
-                  {cat === 'fast-food' && 'Fast Food / Western'}
-                  {cat === 'desi-khany' && 'Desi / Traditional (روایتی)'}
+                  {cat.label}
                 </button>
               ))}
             </div>
@@ -459,7 +344,7 @@ export default function Menu() {
                   <div
                     key={item.id}
                     className="glass rounded-2xl overflow-hidden border border-white/5 hover:border-primary/25 transition-all hover:shadow-2xl flex flex-col justify-between group relative cursor-pointer"
-                    onClick={() => setSelectedItem(item)}
+                    onClick={() => handleOpenItem(item)}
                   >
                     <div>
                       {/* Save Badge */}
@@ -530,7 +415,7 @@ export default function Menu() {
                       </div>
 
                       <button
-                        onClick={() => addToCart({ id: item.id, name: item.name, price: item.price, discount: item.discount, image: item.image })}
+                        onClick={() => handleAddToCartDirect(item)}
                         className="flex items-center gap-1 bg-primary/20 hover:bg-primary text-white text-xs font-semibold py-2 px-3 rounded-lg border border-primary/30 transition-all focus:outline-none"
                       >
                         <ShoppingCart size={13} />
@@ -601,6 +486,40 @@ export default function Menu() {
                   </div>
                 </div>
 
+                {/* Size Selector */}
+                {selectedItem.sizes && (() => {
+                  try {
+                    const parsedSizes = JSON.parse(selectedItem.sizes);
+                    if (parsedSizes.length > 1) {
+                      return (
+                        <div className="space-y-2">
+                          <span className="text-xs font-bold text-white uppercase tracking-wider block">Choose Portion / Size:</span>
+                          <div className="flex flex-wrap gap-2">
+                            {parsedSizes.map((s: any) => (
+                              <button
+                                key={s.size}
+                                type="button"
+                                onClick={() => {
+                                  setActiveSize(s.size);
+                                  setActivePrice(s.price);
+                                }}
+                                className={`px-4.5 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+                                  activeSize === s.size
+                                    ? 'border-primary bg-primary/10 text-white'
+                                    : 'border-white/5 bg-white/5 text-text-muted hover:border-white/10 hover:text-white'
+                                }`}
+                              >
+                                {s.size} (Rs. {s.price})
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                  } catch (e) {}
+                  return null;
+                })()}
+
                 {selectedItem.ingredients && (
                   <div className="space-y-1">
                     <h4 className="text-xs font-bold text-white uppercase">Ingredients</h4>
@@ -614,7 +533,7 @@ export default function Menu() {
                 <div>
                   <span className="text-xs text-text-muted">Total Price</span>
                   <div className="text-2xl font-extrabold text-white">
-                    Rs. {Math.round(selectedItem.price * (1 - selectedItem.discount / 100))}
+                    Rs. {Math.round(activePrice * (1 - selectedItem.discount / 100))}
                   </div>
                 </div>
 
@@ -623,9 +542,10 @@ export default function Menu() {
                     addToCart({
                       id: selectedItem.id,
                       name: selectedItem.name,
-                      price: selectedItem.price,
+                      price: activePrice,
                       discount: selectedItem.discount,
                       image: selectedItem.image,
+                      size: activeSize
                     });
                     setSelectedItem(null);
                   }}
@@ -670,21 +590,19 @@ export default function Menu() {
               {/* Mobile Categories */}
               <div className="space-y-1">
                 <label className="text-xs text-white uppercase font-semibold">Category</label>
-                <div className="flex flex-col gap-1.5 text-xs">
-                  {['all', 'fast-food', 'desi-khany'].map((cat) => (
+                <div className="flex flex-col gap-1.5 text-xs max-h-56 overflow-y-auto pr-1">
+                  {categoriesFilterList.map((cat) => (
                     <button
-                      key={cat}
+                      key={cat.slug}
                       onClick={() => {
-                        setSelectedCategory(cat);
+                        setSelectedCategory(cat.slug);
                         setShowFiltersMobile(false);
                       }}
                       className={`text-left px-3 py-2 rounded-lg ${
-                        selectedCategory === cat ? 'bg-primary text-white' : 'bg-white/5 text-text-muted'
+                        selectedCategory === cat.slug ? 'bg-primary text-white font-bold' : 'bg-white/5 text-text-muted'
                       }`}
                     >
-                      {cat === 'all' && 'All'}
-                      {cat === 'fast-food' && 'Fast Food'}
-                      {cat === 'desi-khany' && 'Desi Khany'}
+                      {cat.label}
                     </button>
                   ))}
                 </div>

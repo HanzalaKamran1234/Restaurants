@@ -78,6 +78,7 @@ model MenuItem {
   prepTime    Int         @default(15) // Prep time in minutes
   rating      Float       @default(4.5)
   image       String
+  sizes       String      @default("[]") // JSON string of sizes, e.g. [{"size": "Regular", "price": 450}]
   categoryId  String
   category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   orderItems  OrderItem[]
@@ -114,6 +115,7 @@ model OrderItem {
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
   quantity   Int
   price      Float
+  size       String   @default("Regular")
 }
 
 model Review {

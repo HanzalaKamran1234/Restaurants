@@ -62,17 +62,33 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
         return res.status(400).json({ message: `Dish '${dbItem.name}' is currently sold out.` });
       }
 
-      const itemPriceAfterDiscount = dbItem.price * (1 - dbItem.discount / 100);
+      // Dynamic price calculation based on selected size
+      let itemPrice = dbItem.price;
+      const selectedSize = item.size || 'Regular';
+      if (dbItem.sizes) {
+        try {
+          const sizesList = JSON.parse(dbItem.sizes);
+          const matchedSize = sizesList.find((s: any) => s.size === selectedSize);
+          if (matchedSize) {
+            itemPrice = matchedSize.price;
+          }
+        } catch (e) {
+          console.log('Error parsing sizes JSON on item', dbItem.name);
+        }
+      }
+
+      const itemPriceAfterDiscount = itemPrice * (1 - dbItem.discount / 100);
       subtotal += itemPriceAfterDiscount * item.quantity;
 
       orderItemsData.push({
         menuItemId: dbItem.id,
         quantity: item.quantity,
         price: itemPriceAfterDiscount,
+        size: selectedSize,
       });
 
       notificationItems.push({
-        name: dbItem.name,
+        name: `${dbItem.name} (${selectedSize})`,
         quantity: item.quantity,
         price: itemPriceAfterDiscount,
       });
@@ -235,7 +251,7 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
       landmark: order.nearestLandmark || undefined,
       paymentMethod: order.paymentMethod,
       items: order.items.map((i) => ({
-        name: i.menuItem.name,
+        name: `${i.menuItem.name} (${i.size})`,
         quantity: i.quantity,
         price: i.price,
       })),

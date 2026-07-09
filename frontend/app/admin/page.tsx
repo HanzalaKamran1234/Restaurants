@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import {
   ShieldAlert, DollarSign, ListOrdered, CheckCircle, TrendingUp, Users,
-  Truck, Settings, MessageSquare, Clock, MapPin, ToggleLeft, ToggleRight, Edit, Check, X
+  Truck, Settings, MessageSquare, Clock, MapPin, ToggleLeft, ToggleRight, Edit, Check, X, Plus, Trash2
 } from 'lucide-react';
 
 interface AnalyticsMetrics {
@@ -47,6 +47,7 @@ interface AdminOrder {
     id: string;
     quantity: number;
     price: number;
+    size: string;
     menuItem: {
       name: string;
     }
@@ -56,11 +57,23 @@ interface AdminOrder {
 interface AdminMenuItem {
   id: string;
   name: string;
+  description: string;
   price: number;
+  prepTime: number;
   available: boolean;
+  categoryId: string;
+  sizes: string;
+  image: string;
   category: {
+    id: string;
     name: string;
   };
+}
+
+interface AdminCategory {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 export default function AdminDashboard() {
@@ -84,10 +97,23 @@ export default function AdminDashboard() {
 
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [menuItems, setMenuItems] = useState<AdminMenuItem[]>([]);
+  const [categoriesList, setCategoriesList] = useState<AdminCategory[]>([]);
   const [activeTab, setActiveTab] = useState<'analytics' | 'orders' | 'menu' | 'delivery'>('analytics');
-  const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [editingPrice, setEditingPrice] = useState<string>('');
   
+  // CRUD Modal State
+  const [showItemModal, setShowItemModal] = useState(false);
+  const [currentItem, setCurrentItem] = useState<AdminMenuItem | null>(null); // Null for Add, MenuItem object for Edit
+
+  // Form Fields State
+  const [itemName, setItemName] = useState('');
+  const [itemCatId, setItemCatId] = useState('');
+  const [itemDesc, setItemDesc] = useState('');
+  const [itemImg, setItemImg] = useState('');
+  const [itemPrice, setItemPrice] = useState('');
+  const [itemPrep, setItemPrep] = useState('15');
+  const [itemAvail, setItemAvail] = useState(true);
+  const [itemSizes, setItemSizes] = useState<Array<{ size: string; price: number }>>([]);
+
   // Delivery Area editing state
   const [editingAreaId, setEditingAreaId] = useState<string | null>(null);
   const [areaCharge, setAreaCharge] = useState('');
@@ -156,6 +182,14 @@ export default function AdminDashboard() {
         if (Array.isArray(data)) setMenuItems(data);
       })
       .catch(() => console.log("Failed to load admin menu items"));
+
+    // Fetch Categories list
+    fetch('http://localhost:5000/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setCategoriesList(data);
+      })
+      .catch(() => console.log("Failed to load categories"));
       
     loadDeliveryAreas();
   };
@@ -186,7 +220,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // Toggle item availability
+  // Toggle item availability quick
   const handleToggleAvailable = async (itemId: string, currentStatus: boolean) => {
     try {
       const res = await fetch(`http://localhost:5000/api/menu/${itemId}`, {
@@ -208,30 +242,126 @@ export default function AdminDashboard() {
     }
   };
 
-  // Update item price
-  const handleUpdatePrice = async (itemId: string) => {
-    const priceFloat = parseFloat(editingPrice);
-    if (isNaN(priceFloat)) return;
+  // CRUD Form triggers
+  const handleOpenAddModal = () => {
+    setCurrentItem(null);
+    setItemName('');
+    setItemCatId(categoriesList[0]?.id || '');
+    setItemDesc('');
+    setItemImg('');
+    setItemPrice('');
+    setItemPrep('15');
+    setItemAvail(true);
+    setItemSizes([{ size: 'Regular', price: 0 }]);
+    setShowItemModal(true);
+  };
+
+  const handleOpenEditModal = (item: AdminMenuItem) => {
+    setCurrentItem(item);
+    setItemName(item.name);
+    setItemCatId(item.categoryId);
+    setItemDesc(item.description);
+    setItemImg(item.image);
+    setItemPrice(String(item.price));
+    setItemPrep(String(item.prepTime));
+    setItemAvail(item.available);
+    
+    let sizesList = [];
+    if (item.sizes) {
+      try {
+        sizesList = JSON.parse(item.sizes);
+      } catch (e) {}
+    }
+    if (sizesList.length === 0) {
+      sizesList = [{ size: 'Regular', price: item.price }];
+    }
+    setItemSizes(sizesList);
+    setShowItemModal(true);
+  };
+
+  const handleAddSizeInput = () => {
+    setItemSizes([...itemSizes, { size: '', price: 0 }]);
+  };
+
+  const handleRemoveSizeInput = (idx: number) => {
+    setItemSizes(itemSizes.filter((_, i) => i !== idx));
+  };
+
+  const handleSizeChange = (idx: number, field: 'size' | 'price', value: any) => {
+    const updated = [...itemSizes];
+    if (field === 'size') {
+      updated[idx].size = value;
+    } else {
+      updated[idx].price = parseFloat(value) || 0;
+    }
+    setItemSizes(updated);
+  };
+
+  // Save Item (Add/Edit)
+  const handleSaveItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!itemName || !itemCatId || !itemImg || !itemPrice) return;
+
+    // The base price is the price of the first size option or custom base
+    const finalBasePrice = itemSizes.length > 0 ? itemSizes[0].price : parseFloat(itemPrice);
+
+    const payload = {
+      name: itemName,
+      categoryId: itemCatId,
+      description: itemDesc,
+      image: itemImg,
+      price: finalBasePrice,
+      prepTime: parseInt(itemPrep) || 15,
+      available: itemAvail,
+      sizes: itemSizes.filter(s => s.size.trim()) // filter empty sizes
+    };
+
+    const method = currentItem ? 'PUT' : 'POST';
+    const url = currentItem 
+      ? `http://localhost:5000/api/menu/${currentItem.id}`
+      : 'http://localhost:5000/api/menu';
 
     try {
-      const res = await fetch(`http://localhost:5000/api/menu/${itemId}`, {
-        method: 'PUT',
+      const res = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ price: priceFloat })
+        body: JSON.stringify(payload)
       });
 
       if (res.ok) {
-        setStatusMsg('Item price updated!');
-        setEditingItemId(null);
-        setEditingPrice('');
+        setStatusMsg(currentItem ? 'Item updated successfully!' : 'Item added successfully!');
+        setShowItemModal(false);
+        setTimeout(() => setStatusMsg(''), 3000);
+        loadDashboardData();
+      } else {
+        const errData = await res.json();
+        alert(errData.message || 'Error saving item');
+      }
+    } catch (err) {
+      alert('Network error. Failed to save item.');
+    }
+  };
+
+  // Delete Item
+  const handleDeleteItem = async (itemId: string) => {
+    if (!window.confirm('Are you sure you want to delete this delicacy?')) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/menu/${itemId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        setStatusMsg('Menu item deleted successfully!');
         setTimeout(() => setStatusMsg(''), 3000);
         loadDashboardData();
       }
     } catch (err) {
-      console.error(err);
+      console.log('Error deleting item');
     }
   };
 
@@ -446,7 +576,7 @@ export default function AdminDashboard() {
                       <div className="space-y-1.5 text-text-muted">
                         {o.items.map((it) => (
                           <div key={it.id} className="flex justify-between">
-                            <span>{it.quantity}x {it.menuItem.name}</span>
+                            <span>{it.quantity}x {it.menuItem.name} <span className="text-gold font-normal">({it.size})</span></span>
                             <span>Rs. {Math.round(it.price * it.quantity)}</span>
                           </div>
                         ))}
@@ -527,7 +657,17 @@ export default function AdminDashboard() {
       {/* MENU CMS TAB */}
       {activeTab === 'menu' && (
         <div className="glass p-6 rounded-3xl border border-white/5 animate-fade-in space-y-6">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider">Dishes CMS Management</h3>
+          <div className="flex justify-between items-center border-b border-white/10 pb-4">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Dishes CMS Management</h3>
+            
+            <button
+              onClick={handleOpenAddModal}
+              className="flex items-center gap-1.5 bg-primary hover:bg-primary-light text-white text-xs font-bold py-2 px-4 rounded-xl transition-all"
+            >
+              <Plus size={14} />
+              <span>Add Menu Item</span>
+            </button>
+          </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
@@ -535,76 +675,69 @@ export default function AdminDashboard() {
                 <tr className="text-gold border-b border-white/10 font-bold">
                   <th className="py-3 px-4">Dish Name</th>
                   <th className="py-3 px-4">Category</th>
-                  <th className="py-3 px-4">Price</th>
-                  <th className="py-3 px-4">Status Toggle</th>
-                  <th className="py-3 px-4">CMS Edits</th>
+                  <th className="py-3 px-4">Starting Price</th>
+                  <th className="py-3 px-4">Sizes & Portions</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">CMS Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {menuItems.map((item) => (
-                  <tr key={item.id} className="border-b border-white/5 hover:bg-white/5 transition-colors text-text-muted">
-                    <td className="py-4 px-4 font-bold text-white">{item.name}</td>
-                    <td className="py-4 px-4 uppercase text-[10px] tracking-wider">{item.category.name}</td>
-                    <td className="py-4 px-4 font-bold text-white">Rs. {item.price}</td>
-                    
-                    {/* Toggle Availability status */}
-                    <td className="py-4 px-4">
-                      <button
-                        onClick={() => handleToggleAvailable(item.id, item.available)}
-                        className="flex items-center text-text-muted"
-                      >
-                        {item.available ? (
-                          <div className="flex items-center gap-1 text-green-400 font-bold">
-                            <ToggleRight size={22} />
-                            <span>In Stock</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1 text-red-500">
-                            <ToggleLeft size={22} />
-                            <span>Sold Out</span>
-                          </div>
-                        )}
-                      </button>
-                    </td>
+                {menuItems.map((item) => {
+                  let sizesLabel = 'N/A';
+                  try {
+                    const parsed = JSON.parse(item.sizes);
+                    if (parsed.length > 0) {
+                      sizesLabel = parsed.map((s: any) => `${s.size} (Rs.${s.price})`).join(', ');
+                    }
+                  } catch(e) {}
+                  
+                  return (
+                    <tr key={item.id} className="border-b border-white/5 hover:bg-white/5 transition-colors text-text-muted">
+                      <td className="py-4 px-4 font-bold text-white flex items-center gap-3">
+                        <img src={item.image} alt={item.name} className="h-10 w-10 object-cover rounded-lg border border-white/10" />
+                        <span>{item.name}</span>
+                      </td>
+                      <td className="py-4 px-4 uppercase text-[10px] tracking-wider">{item.category?.name || 'N/A'}</td>
+                      <td className="py-4 px-4 font-bold text-white">Rs. {item.price}</td>
+                      <td className="py-4 px-4 truncate max-w-[200px]" title={sizesLabel}>{sizesLabel}</td>
+                      
+                      {/* Toggle Availability status */}
+                      <td className="py-4 px-4">
+                        <button
+                          onClick={() => handleToggleAvailable(item.id, item.available)}
+                          className="flex items-center text-text-muted"
+                        >
+                          {item.available ? (
+                            <span className="text-green-400 font-bold">In Stock</span>
+                          ) : (
+                            <span className="text-red-500">Sold Out</span>
+                          )}
+                        </button>
+                      </td>
 
-                    {/* Change price CMS */}
-                    <td className="py-4 px-4">
-                      {editingItemId === item.id ? (
-                        <div className="flex items-center gap-1.5">
-                          <input
-                            type="text"
-                            value={editingPrice}
-                            onChange={(e) => setEditingPrice(e.target.value)}
-                            className="w-16 bg-[#1a1a1a] border border-white/20 rounded px-1.5 py-0.5 text-white"
-                          />
+                      {/* Edit or Delete CMS */}
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
                           <button
-                            onClick={() => handleUpdatePrice(item.id)}
-                            className="p-1 bg-green-700 text-white rounded hover:bg-green-600"
+                            onClick={() => handleOpenEditModal(item)}
+                            className="flex items-center gap-1 text-primary-light hover:text-white transition-colors"
                           >
-                            <Check size={12} />
+                            <Edit size={12} />
+                            <span>Edit</span>
                           </button>
+                          
                           <button
-                            onClick={() => setEditingItemId(null)}
-                            className="text-xs text-text-muted hover:text-white"
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="flex items-center gap-1 text-red-500/80 hover:text-red-400 transition-colors"
                           >
-                            <X size={12} />
+                            <Trash2 size={12} />
+                            <span>Delete</span>
                           </button>
                         </div>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            setEditingItemId(item.id);
-                            setEditingPrice(String(item.price));
-                          }}
-                          className="flex items-center gap-1 text-primary-light hover:text-white transition-colors"
-                        >
-                          <Edit size={12} />
-                          <span>Change Price</span>
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -732,6 +865,178 @@ export default function AdminDashboard() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* 4. CRUD MENU ITEM MODAL */}
+      {showItemModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-xl bg-[#0f0f0f] border border-primary/20 rounded-3xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto font-sans text-xs">
+            <button
+              onClick={() => setShowItemModal(false)}
+              className="absolute top-4 right-4 text-text-muted hover:text-white p-1"
+            >
+              <X size={18} />
+            </button>
+            
+            <h3 className="text-base font-bold text-white border-b border-white/10 pb-3 mb-5 uppercase tracking-wide">
+              {currentItem ? 'Edit Ziyafat Delicacy' : 'Add New Ziyafat Delicacy'}
+            </h3>
+
+            <form onSubmit={handleSaveItem} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-text-muted font-semibold">Portion / Dish Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. White Chicken Karahi"
+                    value={itemName}
+                    onChange={(e) => setItemName(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-text-muted font-semibold">Category</label>
+                  <select
+                    value={itemCatId}
+                    onChange={(e) => setItemCatId(e.target.value)}
+                    className="w-full bg-surface border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-primary"
+                  >
+                    {categoriesList.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-text-muted font-semibold">Short Description</label>
+                <textarea
+                  rows={2}
+                  placeholder="Describe this gourmet dish..."
+                  value={itemDesc}
+                  onChange={(e) => setItemDesc(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-primary resize-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-text-muted font-semibold">Image URL (Unsplash or direct WebP link)</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="https://..."
+                  value={itemImg}
+                  onChange={(e) => setItemImg(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <label className="text-text-muted font-semibold">Base Price (Rs.)</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="450"
+                    value={itemPrice}
+                    onChange={(e) => setItemPrice(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-text-muted font-semibold">Prep Time (mins)</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="15"
+                    value={itemPrep}
+                    onChange={(e) => setItemPrep(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div className="space-y-2 flex flex-col justify-end">
+                  <label className="flex items-center gap-2 cursor-pointer text-white font-bold mb-1">
+                    <input
+                      type="checkbox"
+                      checked={itemAvail}
+                      onChange={(e) => setItemAvail(e.target.checked)}
+                      className="accent-primary h-4 w-4 rounded"
+                    />
+                    <span>Available In Stock</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Sizes / pricing matrix */}
+              <div className="border-t border-white/10 pt-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold text-white uppercase">Sizes & Portion Pricing Matrix</label>
+                  <button
+                    type="button"
+                    onClick={handleAddSizeInput}
+                    className="flex items-center gap-1 text-primary-light hover:text-white"
+                  >
+                    <Plus size={12} />
+                    <span>Add Portion Size</span>
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  {itemSizes.map((sz, idx) => (
+                    <div key={idx} className="flex gap-3 items-center">
+                      <input
+                        type="text"
+                        placeholder="e.g. Half KG, 6 Pieces, Regular"
+                        value={sz.size}
+                        onChange={(e) => handleSizeChange(idx, 'size', e.target.value)}
+                        className="flex-1 bg-white/5 border border-white/10 rounded-lg p-2 text-white focus:outline-none"
+                      />
+                      <div className="flex items-center bg-white/5 border border-white/10 rounded-lg px-2 w-32">
+                        <span className="text-text-muted mr-1.5">Rs.</span>
+                        <input
+                          type="number"
+                          placeholder="Price"
+                          value={sz.price === 0 ? '' : sz.price}
+                          onChange={(e) => handleSizeChange(idx, 'price', e.target.value)}
+                          className="w-full bg-transparent border-0 py-2 text-white focus:outline-none"
+                        />
+                      </div>
+                      
+                      {itemSizes.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSizeInput(idx)}
+                          className="text-text-muted hover:text-primary-light"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-white/10 pt-4 flex justify-end gap-3.5">
+                <button
+                  type="button"
+                  onClick={() => setShowItemModal(false)}
+                  className="px-4 py-2 border border-white/10 rounded-xl text-text-muted hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-primary hover:bg-primary-light text-white font-bold rounded-xl transition-all"
+                >
+                  Save Delicacy
+                </button>
+              </div>
+            </form>
+
           </div>
         </div>
       )}

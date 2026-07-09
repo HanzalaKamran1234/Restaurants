@@ -333,7 +333,7 @@ export default function Home() {
                     </div>
                     
                     <button
-                      onClick={() => addToCart({ id: item.id, name: item.name, price: item.price, discount: item.discount, image: item.image })}
+                      onClick={() => addToCart({ id: item.id, name: item.name, price: item.price, discount: item.discount, image: item.image, size: 'Regular' })}
                       className="p-2 bg-primary hover:bg-primary-light rounded-lg text-white transition-all focus:outline-none"
                     >
                       <ShoppingCart size={15} />
