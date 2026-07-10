@@ -27,10 +27,10 @@ export const Footer: React.FC = () => {
               Experience the pinnacle of traditional Pakistani luxury dining and modern culinary innovation in Karachi.
             </p>
             <div className="flex space-x-3 pt-2">
-              <a href="#" className="p-2 bg-white/5 hover:bg-primary/20 rounded-full text-text-muted hover:text-white transition-all">
+              <a href="https://www.instagram.com/ziyafatofficial/" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-primary/20 rounded-full text-text-muted hover:text-white transition-all">
                 <Instagram size={15} />
               </a>
-              <a href="#" className="p-2 bg-white/5 hover:bg-primary/20 rounded-full text-text-muted hover:text-white transition-all">
+              <a href="https://www.facebook.com/profile.php?id=61591768202064" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-primary/20 rounded-full text-text-muted hover:text-white transition-all">
                 <Facebook size={15} />
               </a>
             </div>

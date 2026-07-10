@@ -32,7 +32,7 @@ export default function Checkout() {
   const [landmark, setLandmark] = useState('');
   const [selectedAreaId, setSelectedAreaId] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('COD'); // COD, JAZZCASH, CARD
+  const paymentMethod = 'COD';
 
   // Order Submission State
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -416,41 +416,15 @@ export default function Checkout() {
           <div className="glass p-6 rounded-2xl border border-white/5 space-y-4">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-white/10 pb-3">
               <CreditCard size={15} className="text-gold" />
-              <span>Select Payment Method</span>
+              <span>Payment Method</span>
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <label className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
-                paymentMethod === 'COD' ? 'border-primary bg-primary/5' : 'border-white/5 hover:border-white/20'
-              }`}>
-                <input
-                  type="radio"
-                  name="payment"
-                  checked={paymentMethod === 'COD'}
-                  onChange={() => setPaymentMethod('COD')}
-                  className="accent-primary"
-                />
-                <div>
-                  <div className="text-xs font-bold text-white">{t.cod}</div>
-                  <div className="text-[10px] text-text-muted mt-0.5">Pay with cash upon package handoff.</div>
-                </div>
-              </label>
-
-              <label className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
-                paymentMethod === 'JAZZCASH' ? 'border-primary bg-primary/5' : 'border-white/5 hover:border-white/20'
-              }`}>
-                <input
-                  type="radio"
-                  name="payment"
-                  checked={paymentMethod === 'JAZZCASH'}
-                  onChange={() => setPaymentMethod('JAZZCASH')}
-                  className="accent-primary"
-                />
-                <div>
-                  <div className="text-xs font-bold text-white">{t.jazzcash}</div>
-                  <div className="text-[10px] text-text-muted mt-0.5">Easy mobile transfer (EasyPaisa/JazzCash).</div>
-                </div>
-              </label>
+            <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex items-center gap-3">
+              <div className="h-2.5 w-2.5 rounded-full bg-primary animate-pulse"></div>
+              <div>
+                <div className="text-xs font-bold text-white">{t.cod}</div>
+                <div className="text-[10px] text-text-muted mt-0.5">Pay with cash upon package handoff.</div>
+              </div>
             </div>
           </div>
 

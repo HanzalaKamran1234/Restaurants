@@ -29,9 +29,7 @@ export class NotificationService {
       .map((item) => `${item.quantity} × ${item.name}`)
       .join('\n');
 
-    let paymentLabel = 'Cash on Delivery';
-    if (order.paymentMethod === 'JAZZCASH') paymentLabel = 'JazzCash / EasyPaisa';
-    else if (order.paymentMethod === 'CARD') paymentLabel = 'Credit / Debit Card';
+    const paymentLabel = 'Cash on Delivery';
 
     const msg = `NEW ORDER\n\n` +
       `Order ID: ${order.orderNumber}\n\n` +

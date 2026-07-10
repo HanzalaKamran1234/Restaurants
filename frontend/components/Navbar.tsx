@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '../context/AppContext';
 import { translations } from '../utils/translations';
-import { ShoppingBag, Globe, User, LogOut, LayoutDashboard, Menu as MenuIcon, X } from 'lucide-react';
+import { ShoppingBag, User, LogOut, LayoutDashboard, Menu as MenuIcon, X } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { cart, user, logoutUser, language, setLanguage, setIsCartOpen } = useApp();
@@ -45,7 +45,7 @@ export const Navbar: React.FC = () => {
                 ZIYAFAT
               </span>
               <span className="text-[9px] tracking-wider text-gold font-light uppercase">
-                {language === 'en' ? 'Karachi Feast' : 'کراچی ضیافت'}
+                Karachi Feast
               </span>
             </div>
           </Link>
@@ -70,14 +70,7 @@ export const Navbar: React.FC = () => {
           {/* Utility Controls */}
           <div className="flex items-center space-x-4">
             
-            {/* Language Toggler */}
-            <button
-              onClick={() => setLanguage(language === 'en' ? 'ur' : 'en')}
-              className="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 hover:border-primary/40 rounded-full text-xs font-semibold text-white transition-all focus:outline-none"
-            >
-              <Globe size={13} className="text-gold" />
-              <span>{language === 'en' ? 'اردو' : 'English'}</span>
-            </button>
+
 
             {/* Shopping Cart Icon */}
             <button
