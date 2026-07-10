@@ -81,18 +81,18 @@ async function main() {
 
   // 5. Create Categories
   const categoriesList = [
-    { name: 'Fast Food', slug: 'fast-food', image: 'https://images.unsplash.com/photo-1561751823-34fed022540e?auto=format&fit=crop&q=80&w=800' },
+    { name: 'Fast Food', slug: 'fast-food', image: 'https://images.unsplash.com/photo-1561651823-34fed022540e?auto=format&fit=crop&q=80&w=800' },
     { name: 'Burgers', slug: 'burgers', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800' },
     { name: 'Hot Wings', slug: 'hot-wings', image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&q=80&w=800' },
     { name: 'Shawarma', slug: 'shawarma', image: 'https://images.unsplash.com/photo-1561651823-34fed022540e?auto=format&fit=crop&q=80&w=800' },
-    { name: 'Paratha Roll', slug: 'paratha-roll', image: 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&q=80&w=800' },
+    { name: 'Paratha Roll', slug: 'paratha-roll', image: '/images/menu/paratha_roll.png' },
     { name: 'Spring Rolls', slug: 'spring-rolls', image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=800' },
-    { name: 'Samosa', slug: 'samosa', image: 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&q=80&w=800' },
-    { name: 'Chicken Samosa', slug: 'chicken-samosa', image: 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&q=80&w=800' },
+    { name: 'Samosa', slug: 'samosa', image: '/images/menu/samosa.png' },
+    { name: 'Chicken Samosa', slug: 'chicken-samosa', image: '/images/menu/chicken_samosa.png' },
     { name: 'Sandwiches', slug: 'sandwiches', image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&q=80&w=800' },
     { name: 'Pasta & Macaroni', slug: 'pasta-macaroni', image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&q=80&w=800' },
-    { name: 'Desi Cuisine', slug: 'desi-cuisine', image: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&q=80&w=800' },
-    { name: 'Karahi', slug: 'karahi', image: 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&q=80&w=800' }
+    { name: 'Desi Cuisine', slug: 'desi-cuisine', image: '/images/menu/chicken_biryani.png' },
+    { name: 'Karahi', slug: 'karahi', image: '/images/menu/chicken_karahi.png' }
   ];
 
   const dbCategories: { [key: string]: string } = {};
@@ -181,7 +181,7 @@ async function main() {
     {
       name: 'Paratha Roll',
       description: 'Tandoori spiced chicken cubes or beef boti rolled inside a crispy paratha with chatni.',
-      image: 'https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&q=80&w=800',
+      image: '/images/menu/paratha_roll.png',
       price: 280,
       sizes: JSON.stringify([{ size: 'Regular', price: 280 }]),
       prepTime: 10,
@@ -203,7 +203,7 @@ async function main() {
     {
       name: 'Samosa',
       description: 'Traditional crispy pastry triangles stuffed with spiced potatoes and peas.',
-      image: 'https://images.unsplash.com/photo-1610192244261-3f33de3f55e4?auto=format&fit=crop&q=80&w=800',
+      image: '/images/menu/samosa.png',
       price: 25,
       sizes: JSON.stringify([
         { size: 'Small', price: 25 },
@@ -217,7 +217,7 @@ async function main() {
     {
       name: 'Chicken Samosa',
       description: 'Premium crispy triangles filled with minced chicken and traditional spices.',
-      image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=800',
+      image: '/images/menu/chicken_samosa.png',
       price: 30,
       sizes: JSON.stringify([
         { size: 'Small', price: 30 },
@@ -286,7 +286,7 @@ async function main() {
     {
       name: 'Dal Chawal',
       description: 'Traditional Pakistani comfort meal of slow-cooked spicy lentils served over steamed basmati rice.',
-      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=800',
+      image: '/images/menu/dal_chawal.png',
       price: 300,
       sizes: JSON.stringify([{ size: 'Per Plate', price: 300 }]),
       prepTime: 10,
@@ -297,7 +297,7 @@ async function main() {
     {
       name: 'Chicken Biryani',
       description: 'Authentic spiced Karachi style layered basmati rice with juicy chicken pieces and potato.',
-      image: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&q=80&w=800',
+      image: '/images/menu/chicken_biryani.png',
       price: 500,
       sizes: JSON.stringify([
         { size: 'Half KG', price: 500 },
@@ -311,7 +311,7 @@ async function main() {
     {
       name: 'Chicken Pulao',
       description: 'Mildly spiced, fragrant basmati rice cooked in rich chicken stock and whole spices.',
-      image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&q=80&w=800',
+      image: '/images/menu/chicken_pulao.png',
       price: 450,
       sizes: JSON.stringify([
         { size: 'Half KG', price: 450 },
@@ -325,7 +325,7 @@ async function main() {
     {
       name: 'Haleem',
       description: 'Slow-cooked stew of barley, wheat, lentils, and beef shredded to a perfect creamy texture.',
-      image: 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&q=80&w=800',
+      image: '/images/menu/haleem.png',
       price: 250,
       sizes: JSON.stringify([{ size: 'Per Head', price: 250 }]),
       prepTime: 10,
@@ -336,7 +336,7 @@ async function main() {
     {
       name: 'White Chicken Karahi',
       description: 'Karachi style chicken wok stir-fried in a rich yogurt and cream gravy with black pepper.',
-      image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&q=80&w=800',
+      image: '/images/menu/white_chicken_karahi.png',
       price: 900,
       sizes: JSON.stringify([
         { size: 'Half KG', price: 900 },
@@ -350,7 +350,7 @@ async function main() {
     {
       name: 'Saag',
       description: 'Saag cooked in pure desi ghee with mustard leaves and authentic herbs.',
-      image: 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&q=80&w=800',
+      image: '/images/menu/saag.png',
       price: 250,
       sizes: JSON.stringify([{ size: 'Per Head', price: 250 }]),
       prepTime: 10,
@@ -361,7 +361,7 @@ async function main() {
     {
       name: 'Curry Pakora',
       description: 'Traditional tangy yogurt gram flour curry with crispy vegetable pakoras.',
-      image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=800',
+      image: '/images/menu/curry_pakora.png',
       price: 280,
       sizes: JSON.stringify([{ size: 'Per Head', price: 280 }]),
       prepTime: 12,
@@ -372,7 +372,7 @@ async function main() {
     {
       name: 'Chicken Karahi',
       description: 'Spicy chicken karahi cooked in wok with tomatoes, green chilies, and aromatic spices.',
-      image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&q=80&w=800',
+      image: '/images/menu/chicken_karahi.png',
       price: 800,
       sizes: JSON.stringify([
         { size: 'Half KG', price: 800 },
@@ -386,7 +386,7 @@ async function main() {
     {
       name: 'Mutton Karahi',
       description: 'Luxury mutton stir-fried in a traditional wok with fresh tomatoes, ginger, and desi ghee.',
-      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=800',
+      image: '/images/menu/mutton_karahi.png',
       price: 1350,
       sizes: JSON.stringify([
         { size: 'Half KG', price: 1350 },
