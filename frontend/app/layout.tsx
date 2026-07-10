@@ -6,6 +6,8 @@ import { Footer } from '../components/Footer';
 import { CartDrawer } from '../components/CartDrawer';
 import { FloatingActions } from '../components/FloatingActions';
 
+import { ClerkProvider } from '@clerk/nextjs';
+
 export const metadata: Metadata = {
   title: 'Ziyafat (ضیافت) | Luxury Online Food Delivery Karachi',
   description: 'Ziyafat brings traditional premium dining to your doorstep in North Nazimabad, Karachi. Savor our royal Fast Food and authentic Desi Khany.',
@@ -24,9 +26,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="antialiased">
-        <AppProvider>
+    <ClerkProvider>
+      <html lang="en">
+        <body className="antialiased">
+          <AppProvider>
           {/* Ambient Lighting Overlay */}
           <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
             <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] radial-glow opacity-30"></div>
@@ -44,5 +47,6 @@ export default function RootLayout({
         </AppProvider>
       </body>
     </html>
+    </ClerkProvider>
   );
 }

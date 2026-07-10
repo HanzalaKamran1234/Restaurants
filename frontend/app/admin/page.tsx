@@ -155,10 +155,8 @@ export default function AdminDashboard() {
   }
 
   const loadDashboardData = () => {
-    const headers = { 'Authorization': `Bearer ${token}` };
-
     // Fetch Metrics
-    fetch('http://localhost:5000/api/analytics/dashboard', { headers })
+    fetch('/api/analytics/dashboard')
       .then(res => res.json())
       .then(data => {
         if (data.metrics) {
@@ -168,7 +166,7 @@ export default function AdminDashboard() {
       .catch(() => console.log("Using static data fallback for admin metrics"));
 
     // Fetch Orders
-    fetch('http://localhost:5000/api/orders/admin', { headers })
+    fetch('/api/orders')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setOrders(data);
@@ -176,7 +174,7 @@ export default function AdminDashboard() {
       .catch(() => console.log("Failed to load admin orders"));
 
     // Fetch Menu Items
-    fetch('http://localhost:5000/api/menu')
+    fetch('/api/menu')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setMenuItems(data);
@@ -184,7 +182,7 @@ export default function AdminDashboard() {
       .catch(() => console.log("Failed to load admin menu items"));
 
     // Fetch Categories list
-    fetch('http://localhost:5000/api/categories')
+    fetch('/api/categories')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setCategoriesList(data);
@@ -201,11 +199,10 @@ export default function AdminDashboard() {
   // Update order status action triggers
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+      const res = await fetch(`/api/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ status: newStatus.toUpperCase() })
       });
@@ -223,11 +220,10 @@ export default function AdminDashboard() {
   // Toggle item availability quick
   const handleToggleAvailable = async (itemId: string, currentStatus: boolean) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/menu/${itemId}`, {
+      const res = await fetch(`/api/menu/${itemId}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ available: !currentStatus })
       });
@@ -318,15 +314,14 @@ export default function AdminDashboard() {
 
     const method = currentItem ? 'PUT' : 'POST';
     const url = currentItem 
-      ? `http://localhost:5000/api/menu/${currentItem.id}`
-      : 'http://localhost:5000/api/menu';
+      ? `/api/menu/${currentItem.id}`
+      : '/api/menu';
 
     try {
       const res = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
       });
@@ -350,9 +345,8 @@ export default function AdminDashboard() {
     if (!window.confirm('Are you sure you want to delete this delicacy?')) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/menu/${itemId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const res = await fetch(`/api/menu/${itemId}`, {
+        method: 'DELETE'
       });
 
       if (res.ok) {
@@ -373,11 +367,10 @@ export default function AdminDashboard() {
     if (isNaN(chargeVal) || isNaN(minVal) || !areaTime) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/extra/delivery-areas/${areaId}`, {
+      const res = await fetch(`/api/extra/delivery-areas/${areaId}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           deliveryCharge: chargeVal,
@@ -399,11 +392,10 @@ export default function AdminDashboard() {
 
   const handleToggleAreaAvailable = async (areaId: string, currentStatus: boolean) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/extra/delivery-areas/${areaId}`, {
+      const res = await fetch(`/api/extra/delivery-areas/${areaId}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ available: !currentStatus })
       });

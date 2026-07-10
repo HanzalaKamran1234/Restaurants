@@ -75,7 +75,7 @@ export default function Home() {
 
   useEffect(() => {
     // Attempt to fetch fresh menu items from backend API
-    fetch('http://localhost:5000/api/menu')
+    fetch('/api/menu')
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {

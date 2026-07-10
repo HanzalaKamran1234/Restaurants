@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useUser, useAuth, useClerk } from '@clerk/nextjs';
 
 export interface CartItem {
   id: string;
@@ -39,6 +40,7 @@ export interface User {
   whatsapp?: string;
   addresses?: CustomerAddress[];
   favoriteItems?: any[];
+  loyaltyPoints?: number;
 }
 
 interface AppContextType {
@@ -49,32 +51,34 @@ interface AppContextType {
   clearCart: () => void;
   user: User | null;
   token: string | null;
-  loginUser: (token: string, user: User) => void;
-  logoutUser: () => void;
+  loginUser: () => void;
+  logoutUser: () => Promise<void>;
   language: 'en' | 'ur';
   setLanguage: (lang: 'en' | 'ur') => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
   
-  // v2 Address Management
+  // Address Management
   addresses: CustomerAddress[];
   addAddress: (title: string, areaId: string, landmark: string, fullAddress: string) => Promise<boolean>;
   deleteAddress: (id: string) => Promise<boolean>;
   
-  // v2 Favorites
+  // Favorites
   favorites: any[];
   toggleFavorite: (itemId: string) => Promise<void>;
   
-  // v2 Delivery Areas
+  // Delivery Areas
   deliveryAreas: DeliveryArea[];
   loadDeliveryAreas: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const API_BASE = 'http://localhost:5000/api';
-
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isSignedIn, user: clerkUser } = useUser();
+  const { getToken } = useAuth();
+  const { signOut } = useClerk();
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -82,7 +86,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // v2 states
+  // address & favorite states
   const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
   const [favorites, setFavorites] = useState<any[]>([]);
   const [deliveryAreas, setDeliveryAreas] = useState<DeliveryArea[]>([]);
@@ -91,13 +95,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     setIsMounted(true);
     const savedCart = localStorage.getItem('ziyafat_cart');
-    const savedToken = localStorage.getItem('ziyafat_token');
-    const savedUser = localStorage.getItem('ziyafat_user');
     const savedLang = localStorage.getItem('ziyafat_lang');
 
     if (savedCart) setCart(JSON.parse(savedCart));
-    if (savedToken) setToken(savedToken);
-    if (savedUser) setUser(JSON.parse(savedUser));
     if (savedLang) setLanguage(savedLang as 'en' | 'ur');
 
     loadDeliveryAreas();
@@ -106,7 +106,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Fetch Delivery Areas from database
   const loadDeliveryAreas = async () => {
     try {
-      const res = await fetch(`${API_BASE}/extra/delivery-areas`);
+      const res = await fetch('/api/extra/delivery-areas');
       const data = await res.json();
       if (Array.isArray(data)) {
         setDeliveryAreas(data);
@@ -126,31 +126,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Sync profile details if logged in
+  // Sync profile details if Clerk reports signed-in status
   useEffect(() => {
-    if (token) {
-      fetchProfileData();
-    } else {
-      setAddresses([]);
-      setFavorites([]);
-    }
-  }, [token]);
+    const syncProfile = async () => {
+      if (isSignedIn) {
+        try {
+          const sessionToken = await getToken();
+          setToken(sessionToken);
 
-  const fetchProfileData = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/auth/profile`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.user) {
-        setUser(data.user);
-        if (data.user.addresses) setAddresses(data.user.addresses);
-        if (data.user.favoriteItems) setFavorites(data.user.favoriteItems);
+          // Call internal profile sync API
+          const res = await fetch('/api/auth/profile');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.user) {
+              setUser(data.user);
+              if (data.user.addresses) setAddresses(data.user.addresses);
+              if (data.user.favoriteItems) setFavorites(data.user.favoriteItems);
+            }
+          }
+        } catch (err) {
+          console.error('Error synchronizing database profile with Clerk:', err);
+        }
+      } else {
+        setUser(null);
+        setToken(null);
+        setAddresses([]);
+        setFavorites([]);
       }
-    } catch (err) {
-      console.log('Error loading user profile details');
-    }
-  };
+    };
+
+    syncProfile();
+  }, [isSignedIn, clerkUser]);
 
   // Save cart to localStorage
   useEffect(() => {
@@ -186,35 +192,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCart([]);
   };
 
-  const loginUser = (newToken: string, newUser: User) => {
-    setToken(newToken);
-    setUser(newUser);
-    localStorage.setItem('ziyafat_token', newToken);
-    localStorage.setItem('ziyafat_user', JSON.stringify(newUser));
+  const loginUser = () => {
+    // Redirect to Clerk sign in wrap
+    window.location.href = '/login';
   };
 
-  const logoutUser = () => {
-    setToken(null);
+  const logoutUser = async () => {
+    await signOut();
     setUser(null);
+    setToken(null);
     setAddresses([]);
     setFavorites([]);
-    localStorage.removeItem('ziyafat_token');
-    localStorage.removeItem('ziyafat_user');
+    window.location.href = '/';
   };
 
-  // v2 Saved Addresses Operations
+  // Saved Addresses Operations
   const addAddress = async (title: string, areaId: string, landmark: string, fullAddress: string): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE}/auth/addresses`, {
+      const res = await fetch('/api/auth/addresses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ title, areaId, landmark, fullAddress })
       });
       if (res.ok) {
-        await fetchProfileData();
+        // Refresh profile details to load updated addresses
+        const profileRes = await fetch('/api/auth/profile');
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          if (profileData.user?.addresses) {
+            setAddresses(profileData.user.addresses);
+          }
+        }
         return true;
       }
       return false;
@@ -225,12 +235,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteAddress = async (id: string): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE}/auth/addresses/${id}`, {
+      const res = await fetch(`/api/auth/addresses/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
-        await fetchProfileData();
+        setAddresses((prev) => prev.filter((addr) => addr.id !== id));
         return true;
       }
       return false;
@@ -239,16 +248,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // v2 Favorites Operations
+  // Favorites Operations
   const toggleFavorite = async (itemId: string) => {
-    if (!token) return;
     try {
-      const res = await fetch(`${API_BASE}/auth/favorites/${itemId}`, {
+      const res = await fetch(`/api/auth/favorites/${itemId}`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
-        await fetchProfileData();
+        const profileRes = await fetch('/api/auth/profile');
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          if (profileData.user?.favoriteItems) {
+            setFavorites(profileData.user.favoriteItems);
+          }
+        }
       }
     } catch (err) {
       console.log('Error toggling favorite item');

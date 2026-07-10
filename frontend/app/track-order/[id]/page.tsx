@@ -33,7 +33,10 @@ interface Order {
   items: OrderItem[];
 }
 
-export default function TrackOrderDetails({ params }: { params: { id: string } }) {
+import { use } from 'react';
+
+export default function TrackOrderDetails({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const { language } = useApp();
   const t = translations[language];
 
@@ -44,13 +47,18 @@ export default function TrackOrderDetails({ params }: { params: { id: string } }
 
   useEffect(() => {
     const fetchOrder = () => {
-      fetch(`http://localhost:5000/api/orders/${params.id}`)
+      fetch(`/api/orders/${resolvedParams.id}`)
         .then((res) => {
           if (!res.ok) throw new Error('Order not found');
           return res.json();
         })
         .then((data) => {
-          setOrder(data);
+          // Remap properties from db if needed (e.g. mapping subtotal to totalAmount)
+          setOrder({
+            ...data,
+            totalAmount: data.subtotal,
+            area: data.area?.name || 'North Nazimabad'
+          });
           setLoading(false);
         })
         .catch(() => {
@@ -63,7 +71,7 @@ export default function TrackOrderDetails({ params }: { params: { id: string } }
     // Poll order status every 10 seconds for real-time changes
     const interval = setInterval(fetchOrder, 10000);
     return () => clearInterval(interval);
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   // Countdown timer simulation
   useEffect(() => {

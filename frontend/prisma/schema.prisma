@@ -1,0 +1,191 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Profile {
+  id             String         @id // Clerk User ID
+  email          String         @unique
+  fullName       String
+  imageUrl       String?
+  phone          String?
+  whatsapp       String?
+  loyaltyPoints  Int            @default(0)
+  role           String         @default("customer") // "admin" or "customer"
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  addresses      Address[]
+  orders         Order[]
+  reviews        Review[]
+  favorites      Favorite[]
+  cartItems      CartItem[]
+  notifications  Notification[]
+}
+
+model Address {
+  id             String        @id @default(uuid())
+  title          String        @default("Home") // e.g. "Home", "Office", "Parents"
+  profileId      String
+  profile        Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  landmark       String?
+  areaId         String
+  area           DeliveryArea  @relation(fields: [areaId], references: [id], onDelete: Restrict)
+  fullAddress    String
+  latitude       Float?
+  longitude      Float?
+  isDefault      Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model DeliveryArea {
+  id             String        @id @default(uuid())
+  name           String        @unique // e.g. "North Nazimabad"
+  deliveryCharge Float         @default(150)
+  estimatedTime  String        @default("30 Mins")
+  minOrderAmount Float         @default(300)
+  available      Boolean       @default(true)
+  addresses      Address[]
+  orders         Order[]
+}
+
+model Category {
+  id        String     @id @default(uuid())
+  name      String
+  slug      String     @unique
+  image     String
+  menuItems MenuItem[]
+}
+
+model MenuItem {
+  id           String      @id @default(uuid())
+  name         String
+  description  String
+  ingredients  String?     // Comma-separated list
+  calories     Int?
+  spiceLevel   String      @default("NONE") // NONE, MILD, MEDIUM, SPICY
+  servingSize  String?     // e.g. "1 Person"
+  price        Float
+  discount     Float       @default(0) // Discount percentage
+  available    Boolean     @default(true)
+  prepTime     Int         @default(15) // in minutes
+  rating       Float       @default(4.5)
+  image        String
+  sizes        String      @default("[]")
+  gallery      String[]    @default([]) // Array of gallery image URLs
+  categoryId   String
+  category     Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems   OrderItem[]
+  reviews      Review[]
+  favorites    Favorite[]
+  cartItems    CartItem[]
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([profileId, menuItemId])
+}
+
+model CartItem {
+  id         String   @id @default(uuid())
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  quantity   Int      @default(1)
+  size       String   @default("Regular")
+  notes      String?  // Special instructions
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([profileId, menuItemId, size])
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  orderNumber     String        @unique // e.g. "ZYF-000001"
+  profileId       String?
+  profile         Profile?      @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  status          String        @default("PENDING") // PENDING, ACCEPTED, PREPARING, READY, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
+  subtotal        Float
+  deliveryCharge  Float
+  tax             Float
+  finalAmount     Float
+  paymentMethod   String        @default("COD") // COD, CARD, JAZZCASH, EASYPAISA
+  deliveryAddress String
+  nearestLandmark String?
+  areaId          String?
+  area            DeliveryArea? @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  instructions    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  quantity   Int
+  price      Float
+  size       String   @default("Regular")
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  rating     Int      @default(5)
+  comment    String
+  approved   Boolean  @default(false) // Admin approval workflow
+  featured   Boolean  @default(false)
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model WebsiteSetting {
+  id    String @id @default(uuid())
+  key   String @unique // e.g. "logo_text", "website_status"
+  value String
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

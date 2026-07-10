@@ -54,9 +54,7 @@ export default function ProfileDashboard() {
   useEffect(() => {
     if (token) {
       setLoadingOrders(true);
-      fetch('http://localhost:5000/api/orders/user', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      fetch('/api/orders/user')
         .then((res) => res.json())
         .then((data) => {
           if (Array.isArray(data)) setOrderHistory(data);

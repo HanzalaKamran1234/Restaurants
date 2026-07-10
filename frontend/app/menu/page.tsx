@@ -5,20 +5,26 @@ import { useApp } from '../../context/AppContext';
 import { translations } from '../../utils/translations';
 import {
   Search, Star, Clock, ShoppingCart, Flame, Heart, X, Plus, Minus,
-  Check, ArrowRight
+  Check, ArrowRight, SlidersHorizontal
 } from 'lucide-react';
-import { LOCAL_MENU_ITEMS, LOCAL_CATEGORIES, LocalMenuItem } from '../../data/menu';
 
 export default function Menu() {
   const { language, addToCart, favorites, toggleFavorite, token, cart, setIsCartOpen } = useApp();
   const t = translations[language];
 
+  // API Data States
+  const [categories, setCategories] = useState<any[]>([]);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   // Search & Navigation States
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string>('all');
+  const [spiceFilter, setSpiceFilter] = useState<string>('all');
+  const [sortOption, setSortOption] = useState<string>('name'); // name, price-low, price-high, rating
 
-  // Selected item modal detail (Optional expanded view)
-  const [selectedItem, setSelectedItem] = useState<LocalMenuItem | null>(null);
+  // Selected item modal detail
+  const [selectedItem, setSelectedItem] = useState<any | null>(null);
 
   // Card interaction states
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({});
@@ -28,24 +34,42 @@ export default function Menu() {
 
   useEffect(() => {
     setMounted(true);
+    // Fetch Categories
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setCategories(data);
+      })
+      .catch(err => console.error('Error loading categories:', err));
   }, []);
 
-  // Instant scroll-to-search match
+  // Fetch Menu Items dynamically when filters change
   useEffect(() => {
-    if (!searchQuery.trim()) return;
-    const q = searchQuery.toLowerCase();
-    const firstMatch = LOCAL_MENU_ITEMS.find(
-      (item) =>
-        item.name.toLowerCase().includes(q) ||
-        item.description.toLowerCase().includes(q)
-    );
-    if (firstMatch) {
-      const element = document.getElementById(`card-item-${firstMatch.id}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+    setIsLoading(true);
+    let url = `/api/menu?sort=${sortOption}`;
+    if (selectedCategorySlug !== 'all') {
+      url += `&category=${selectedCategorySlug}`;
     }
-  }, [searchQuery]);
+    if (searchQuery.trim()) {
+      url += `&search=${encodeURIComponent(searchQuery.trim())}`;
+    }
+    if (spiceFilter !== 'all') {
+      url += `&spiceLevel=${spiceFilter}`;
+    }
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setMenuItems(data);
+        }
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('Error loading menu items:', err);
+        setIsLoading(false);
+      });
+  }, [selectedCategorySlug, searchQuery, spiceFilter, sortOption]);
 
   if (!mounted) {
     return (
@@ -55,32 +79,21 @@ export default function Menu() {
     );
   }
 
-  // Smooth Category Scroll
-  const handleCategoryScroll = (slug: string) => {
-    setSelectedCategory(slug);
-    if (slug === 'all') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      const targetId = `category-sec-${slug}`;
-      const element = document.getElementById(targetId);
-      if (element) {
-        const offset = 100; // Account for sticky navbar header
-        const bodyRect = document.body.getBoundingClientRect().top;
-        const elementRect = element.getBoundingClientRect().top;
-        const elementPosition = elementRect - bodyRect;
-        const offsetPosition = elementPosition - offset;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
-      }
+  // Parse sizes array from string safely
+  const getItemSizes = (item: any) => {
+    if (!item.sizes) return [];
+    if (Array.isArray(item.sizes)) return item.sizes;
+    try {
+      return JSON.parse(item.sizes);
+    } catch (e) {
+      return [];
     }
   };
 
   // Sizing & Portions Helpers
-  const getActiveSize = (item: LocalMenuItem) => {
-    return selectedSizes[item.id] || item.sizes[0]?.size || 'Regular';
+  const getActiveSize = (item: any) => {
+    const sizes = getItemSizes(item);
+    return selectedSizes[item.id] || sizes[0]?.size || 'Regular';
   };
 
   const handleSelectSize = (itemId: string, sizeName: string) => {
@@ -99,9 +112,10 @@ export default function Menu() {
   };
 
   // Add Item to Cart
-  const handleAddToCart = (item: LocalMenuItem) => {
+  const handleAddToCart = (item: any) => {
     const sizeName = getActiveSize(item);
-    const matchedSize = item.sizes.find((s) => s.size === sizeName);
+    const sizes = getItemSizes(item);
+    const matchedSize = sizes.find((s: any) => s.size === sizeName);
     const price = matchedSize ? matchedSize.price : item.price;
     const qty = quantities[item.id] || 1;
 
@@ -123,23 +137,6 @@ export default function Menu() {
   // Sticky Floating Cart calculations
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const cartSubtotal = cart.reduce((sum, item) => sum + (item.price * (1 - item.discount / 100)) * item.quantity, 0);
-
-  // Group items by category for layout mapping
-  const getItemsByCategory = (slug: string) => {
-    return LOCAL_MENU_ITEMS.filter((item) => {
-      if (slug === 'snacks') {
-        return ['spring-rolls', 'samosa', 'chicken-samosa', 'sandwiches'].includes(item.categorySlug);
-      }
-      return item.categorySlug === slug;
-    });
-  };
-
-  // Check if item matches search query for highlight indicator
-  const isItemSearched = (item: LocalMenuItem) => {
-    if (!searchQuery.trim()) return false;
-    const q = searchQuery.toLowerCase();
-    return item.name.toLowerCase().includes(q) || item.description.toLowerCase().includes(q);
-  };
 
   return (
     <div className="w-full relative z-10 font-sans min-h-screen bg-[#060606] text-white">
@@ -188,18 +185,19 @@ export default function Menu() {
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         
-        {/* 2. CATEGORY PILLS NAVIGATION */}
-        <div className="sticky top-[72px] z-30 bg-[#060606]/85 backdrop-blur-md py-3 border-b border-white/5">
+        {/* 2. FILTERS HEADER */}
+        <div className="sticky top-[72px] z-30 bg-[#060606]/85 backdrop-blur-md py-4 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Category Tabs Scroll */}
           <div 
-            className="flex gap-2.5 overflow-x-auto pb-1 no-scrollbar"
+            className="flex gap-2.5 overflow-x-auto pb-1 no-scrollbar max-w-full md:max-w-[70%]"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <button
-              onClick={() => handleCategoryScroll('all')}
-              className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
-                selectedCategory === 'all'
+              onClick={() => setSelectedCategorySlug('all')}
+              className={`px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
+                selectedCategorySlug === 'all'
                   ? 'bg-gradient-to-r from-primary to-primary-dark text-white border-primary shadow-lg shadow-primary/20'
                   : 'bg-white/5 border-white/5 text-text-muted hover:border-white/10 hover:text-white'
               }`}
@@ -207,222 +205,238 @@ export default function Menu() {
               {language === 'en' ? 'All' : 'تمام'}
             </button>
 
-            {LOCAL_CATEGORIES.map((cat) => {
-              const active = selectedCategory === cat.slug;
+            {categories.map((cat) => {
+              const active = selectedCategorySlug === cat.slug;
               return (
                 <button
-                  key={cat.slug}
-                  onClick={() => handleCategoryScroll(cat.slug)}
-                  className={`px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
+                  key={cat.id}
+                  onClick={() => setSelectedCategorySlug(cat.slug)}
+                  className={`px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
                     active
                       ? 'bg-gradient-to-r from-primary to-primary-dark text-white border-primary shadow-lg shadow-primary/20'
                       : 'bg-white/5 border-white/5 text-text-muted hover:border-white/10 hover:text-white'
                   }`}
                 >
-                  {language === 'en' ? cat.name : cat.ur}
+                  {cat.name}
                 </button>
               );
             })}
           </div>
+
+          {/* Advanced Sorting & Spice Filters */}
+          <div className="flex items-center gap-3 self-end md:self-auto">
+            <SlidersHorizontal size={14} className="text-gold" />
+            
+            {/* Spice Filter */}
+            <select
+              value={spiceFilter}
+              onChange={(e) => setSpiceFilter(e.target.value)}
+              className="bg-surface border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-primary"
+            >
+              <option value="all">All Spice Levels</option>
+              <option value="none">No Spice (None)</option>
+              <option value="mild">Mild</option>
+              <option value="medium">Medium</option>
+              <option value="spicy">Spicy</option>
+            </select>
+
+            {/* Sort Filter */}
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="bg-surface border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-primary"
+            >
+              <option value="name">Alphabetical</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="rating">Best Rated</option>
+            </select>
+          </div>
         </div>
 
-        {/* 3. MENU LIST SECTIONS (Ordered sequentially) */}
-        <div className="space-y-16 pt-4">
-          {LOCAL_CATEGORIES.map((cat) => {
-            const categoryItems = getItemsByCategory(cat.slug);
-            if (categoryItems.length === 0) return null;
+        {/* 3. MENU ITEMS GRID */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 py-10">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="glass rounded-3xl h-[420px] border border-white/5 animate-pulse bg-white/5 flex flex-col justify-between p-5">
+                <div className="w-full h-44 bg-white/10 rounded-2xl"></div>
+                <div className="w-[80%] h-5 bg-white/10 rounded mt-4"></div>
+                <div className="w-[50%] h-3 bg-white/10 rounded mt-2"></div>
+                <div className="w-full h-10 bg-white/10 rounded-xl mt-6"></div>
+              </div>
+            ))}
+          </div>
+        ) : menuItems.length === 0 ? (
+          <div className="py-24 text-center space-y-4">
+            <div className="text-3xl">🍲</div>
+            <h3 className="text-lg font-bold text-white">No Delicacies Found</h3>
+            <p className="text-xs text-text-muted max-w-sm mx-auto">
+              We couldn't locate any menu items matches. Try adjusting your filters or search keywords.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 py-4">
+            {menuItems.map((item) => {
+              const sizes = getItemSizes(item);
+              const activeSize = getActiveSize(item);
+              const matchedSize = sizes.find((s: any) => s.size === activeSize);
+              const currentPrice = matchedSize ? matchedSize.price : item.price;
+              const finalPrice = currentPrice * (1 - item.discount / 100);
 
-            return (
-              <section
-                key={cat.slug}
-                id={`category-sec-${cat.slug}`}
-                className="space-y-6 scroll-mt-28"
-              >
-                {/* Category Header */}
-                <div className="border-b border-white/10 pb-3 flex justify-between items-end">
+              const qty = getQuantity(item.id);
+              const isAdded = addedStatus[item.id] || false;
+
+              return (
+                <div
+                  key={item.id}
+                  id={`card-item-${item.id}`}
+                  className="group glass rounded-3xl overflow-hidden border border-white/5 hover:border-primary/20 hover:shadow-[0_0_15px_rgba(196,30,58,0.12)] flex flex-col justify-between transition-all duration-300 relative"
+                >
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-black tracking-wider text-white uppercase flex items-center gap-2">
-                      <span className="text-primary font-urdu">{cat.ur}</span>
-                      <span>{cat.name}</span>
-                    </h2>
-                    <div className="w-12 h-1 bg-primary mt-1.5 rounded-full"></div>
-                  </div>
-                  <span className="text-[10px] text-text-muted uppercase font-bold tracking-widest bg-white/5 px-2.5 py-1 rounded-lg">
-                    {categoryItems.length} Dishes
-                  </span>
-                </div>
-
-                {/* Grid layout (Desktop 4, Laptop 3, Tablet 2, Mobile 1) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                  {categoryItems.map((item) => {
-                    const activeSize = getActiveSize(item);
-                    const matchedSize = item.sizes.find((s) => s.size === activeSize);
-                    const currentPrice = matchedSize ? matchedSize.price : item.price;
-                    const finalPrice = currentPrice * (1 - item.discount / 100);
-
-                    const qty = getQuantity(item.id);
-                    const isAdded = addedStatus[item.id] || false;
-                    const isHighlighted = isItemSearched(item);
-
-                    return (
-                      <div
-                        key={item.id}
-                        id={`card-item-${item.id}`}
-                        className={`group glass rounded-3xl overflow-hidden border flex flex-col justify-between transition-all duration-300 relative ${
-                          isHighlighted
-                            ? 'border-primary bg-primary/5 shadow-[0_0_20px_rgba(196,30,58,0.25)] scale-[1.01]'
-                            : 'border-white/5 hover:border-primary/20 hover:shadow-[0_0_15px_rgba(196,30,58,0.12)]'
-                        }`}
+                    {/* Heart Favorite Toggler */}
+                    {token && (
+                      <button
+                        onClick={() => toggleFavorite(item.id)}
+                        aria-label="Favorite Dish"
+                        className="absolute top-3.5 right-3.5 p-1.5 bg-black/60 hover:bg-black rounded-full text-primary-light z-10 border border-white/10 hover:border-primary/30 transition-all focus:outline-none"
                       >
-                        <div>
-                          {/* Heart Icon Toggler */}
-                          {token && (
-                            <button
-                              onClick={() => toggleFavorite(item.id)}
-                              aria-label="Favorite Dish"
-                              className="absolute top-3.5 right-3.5 p-1.5 bg-black/60 hover:bg-black rounded-full text-primary-light z-10 border border-white/10 hover:border-primary/30 transition-all focus:outline-none"
-                            >
-                              <Heart
-                                size={13}
-                                className={favorites.some((f) => f.id === item.id) ? "fill-current text-primary-light" : "text-white"}
-                              />
-                            </button>
-                          )}
+                        <Heart
+                          size={13}
+                          className={favorites.some((f) => f.id === item.id) ? "fill-current text-primary-light" : "text-white"}
+                        />
+                      </button>
+                    )}
 
-                          {/* Food HD Image */}
-                          <div 
-                            className="h-48 overflow-hidden relative cursor-pointer"
-                            onClick={() => setSelectedItem(item)}
-                          >
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              loading="lazy"
-                              className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"></div>
-                            
-                            <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[10px] text-white">
-                              <span className="flex items-center gap-0.5 bg-black/55 px-2.5 py-0.5 rounded-full border border-white/5 backdrop-blur-sm">
-                                <Star size={10} className="text-gold fill-current" />
-                                <span className="font-bold">{item.rating}</span>
-                              </span>
-                              <span className="flex items-center gap-0.5 bg-black/55 px-2.5 py-0.5 rounded-full border border-white/5 backdrop-blur-sm">
-                                <Clock size={10} className="text-text-muted" />
-                                <span>{item.prepTime} mins</span>
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Info section details */}
-                          <div className="p-5 space-y-3.5">
-                            <div className="flex justify-between items-center text-[9px] uppercase tracking-wider font-bold">
-                              <span className={item.spiceLevel === 'SPICY' ? 'text-primary-light' : 'text-text-muted'}>
-                                {item.spiceLevel} Spice
-                              </span>
-                              <span className="text-gold">{item.servingSize}</span>
-                            </div>
-
-                            <h3 
-                              onClick={() => setSelectedItem(item)}
-                              className="text-sm font-bold text-white hover:text-primary transition-colors cursor-pointer line-clamp-1"
-                            >
-                              {item.name}
-                            </h3>
-
-                            <p className="text-[11px] text-text-muted font-light leading-relaxed line-clamp-2 h-8">
-                              {item.description}
-                            </p>
-
-                            {/* Portions picker */}
-                            {item.sizes.length > 1 && (
-                              <div className="space-y-1.5 pt-1">
-                                <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider block">Portions:</span>
-                                <div className="flex flex-wrap gap-1.5">
-                                  {item.sizes.map((sz) => {
-                                    const active = activeSize === sz.size;
-                                    return (
-                                      <button
-                                        key={sz.size}
-                                        type="button"
-                                        onClick={() => handleSelectSize(item.id, sz.size)}
-                                        className={`px-3 py-1 text-[10px] font-bold border rounded-lg transition-all ${
-                                          active
-                                            ? 'border-primary bg-primary/10 text-white'
-                                            : 'border-white/5 bg-white/5 text-text-muted hover:border-white/10 hover:text-white'
-                                        }`}
-                                      >
-                                        {sz.size}
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Pricing, Quantity & Cart Steppers */}
-                        <div className="p-5 border-t border-white/5 flex flex-col gap-3 mt-auto bg-black/25">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <div className="text-[9px] text-text-muted uppercase">Computed price</div>
-                              <div className="text-base font-extrabold text-white">
-                                Rs. {Math.round(finalPrice * qty)}
-                              </div>
-                            </div>
-
-                            {/* Quantity Controls */}
-                            <div className="flex items-center bg-white/5 border border-white/10 rounded-xl px-1.5 py-0.5">
-                              <button
-                                onClick={() => adjustQty(item.id, -1)}
-                                className="p-1 hover:text-primary transition-colors focus:outline-none"
-                                aria-label="Decrease quantity"
-                              >
-                                <Minus size={11} />
-                              </button>
-                              <span className="text-xs font-bold px-2.5 text-white w-6 text-center">{qty}</span>
-                              <button
-                                onClick={() => adjustQty(item.id, 1)}
-                                className="p-1 hover:text-primary transition-colors focus:outline-none"
-                                aria-label="Increase quantity"
-                              >
-                                <Plus size={11} />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Add to Cart button */}
-                          <button
-                            onClick={() => handleAddToCart(item)}
-                            className={`w-full flex items-center justify-center gap-1.5 font-bold py-2.5 px-4 rounded-xl shadow-md transition-all text-xs focus:outline-none ${
-                              isAdded
-                                ? 'bg-green-700 text-white border border-green-600'
-                                : 'bg-gradient-to-r from-primary to-primary-dark hover:from-primary-light hover:to-primary text-white shadow-primary/15 hover:shadow-primary/25 transform hover:-translate-y-0.5 active:translate-y-0'
-                            }`}
-                          >
-                            {isAdded ? (
-                              <>
-                                <Check size={14} />
-                                <span>Added successfully</span>
-                              </>
-                            ) : (
-                              <>
-                                <ShoppingCart size={13} />
-                                <span>Add to Cart</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-
+                    {/* Food HD Image */}
+                    <div 
+                      className="h-48 overflow-hidden relative cursor-pointer bg-surface"
+                      onClick={() => setSelectedItem(item)}
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"></div>
+                      
+                      <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[10px] text-white">
+                        <span className="flex items-center gap-0.5 bg-black/55 px-2.5 py-0.5 rounded-full border border-white/5 backdrop-blur-sm">
+                          <Star size={10} className="text-gold fill-current" />
+                          <span className="font-bold">{item.rating}</span>
+                        </span>
+                        <span className="flex items-center gap-0.5 bg-black/55 px-2.5 py-0.5 rounded-full border border-white/5 backdrop-blur-sm">
+                          <Clock size={10} className="text-text-muted" />
+                          <span>{item.prepTime} mins</span>
+                        </span>
                       </div>
-                    );
-                  })}
+                    </div>
+
+                    {/* Info section details */}
+                    <div className="p-5 space-y-3.5">
+                      <div className="flex justify-between items-center text-[9px] uppercase tracking-wider font-bold">
+                        <span className={item.spiceLevel === 'SPICY' ? 'text-primary-light' : 'text-text-muted'}>
+                          {item.spiceLevel} Spice
+                        </span>
+                        <span className="text-gold">{item.servingSize || '1 Person'}</span>
+                      </div>
+
+                      <h3 
+                        onClick={() => setSelectedItem(item)}
+                        className="text-sm font-bold text-white hover:text-primary transition-colors cursor-pointer line-clamp-1"
+                      >
+                        {item.name}
+                      </h3>
+
+                      <p className="text-[11px] text-text-muted font-light leading-relaxed line-clamp-2 h-8">
+                        {item.description}
+                      </p>
+
+                      {/* Portions picker */}
+                      {sizes.length > 1 && (
+                        <div className="space-y-1.5 pt-1">
+                          <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider block">Portions:</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {sizes.map((sz: any) => {
+                              const active = activeSize === sz.size;
+                              return (
+                                <button
+                                  key={sz.size}
+                                  type="button"
+                                  onClick={() => handleSelectSize(item.id, sz.size)}
+                                  className={`px-3 py-1 text-[10px] font-bold border rounded-lg transition-all ${
+                                    active
+                                      ? 'border-primary bg-primary/10 text-white'
+                                      : 'border-white/5 bg-white/5 text-text-muted hover:border-white/10 hover:text-white'
+                                  }`}
+                                >
+                                  {sz.size}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Pricing, Quantity & Cart Steppers */}
+                  <div className="p-5 border-t border-white/5 flex flex-col gap-3 mt-auto bg-black/25">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="text-[9px] text-text-muted uppercase">Computed price</div>
+                        <div className="text-base font-extrabold text-white">
+                          Rs. {Math.round(finalPrice * qty)}
+                        </div>
+                      </div>
+
+                      {/* Quantity Controls */}
+                      <div className="flex items-center bg-white/5 border border-white/10 rounded-xl px-1.5 py-0.5">
+                        <button
+                          onClick={() => adjustQty(item.id, -1)}
+                          className="p-1 hover:text-primary transition-colors focus:outline-none"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus size={11} />
+                        </button>
+                        <span className="text-xs font-bold px-2.5 text-white w-6 text-center">{qty}</span>
+                        <button
+                          onClick={() => adjustQty(item.id, 1)}
+                          className="p-1 hover:text-primary transition-colors focus:outline-none"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus size={11} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Add to Cart button */}
+                    <button
+                      onClick={() => handleAddToCart(item)}
+                      className={`w-full flex items-center justify-center gap-1.5 font-bold py-2.5 px-4 rounded-xl shadow-md transition-all text-xs focus:outline-none ${
+                        isAdded
+                          ? 'bg-green-700 text-white border border-green-600'
+                          : 'bg-gradient-to-r from-primary to-primary-dark hover:from-primary-light hover:to-primary text-white shadow-primary/15 hover:shadow-primary/25 transform hover:-translate-y-0.5 active:translate-y-0'
+                      }`}
+                    >
+                      {isAdded ? (
+                        <>
+                          <Check size={14} />
+                          <span>Added successfully</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart size={13} />
+                          <span>Add to Cart</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </section>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* 4. STICKY FLOATING CART BADGE */}
@@ -447,7 +461,7 @@ export default function Menu() {
         </div>
       )}
 
-      {/* 5. ITEM DETAIL MODAL popup (Expanded presentation) */}
+      {/* 5. ITEM DETAIL MODAL popup */}
       {selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
           <div className="w-full max-w-2xl glass-premium rounded-3xl border border-primary/20 overflow-hidden relative shadow-2xl animate-fade-in flex flex-col md:flex-row">
@@ -484,7 +498,7 @@ export default function Menu() {
                   </div>
                   <div className="p-2.5 bg-white/5 border border-white/5 rounded-xl">
                     <div className="text-[9px] text-text-muted uppercase font-bold tracking-wider">Serving Size</div>
-                    <div className="font-extrabold text-white mt-0.5">{selectedItem.servingSize}</div>
+                    <div className="font-extrabold text-white mt-0.5">{selectedItem.servingSize || '1 Person'}</div>
                   </div>
                   <div className="p-2.5 bg-white/5 border border-white/5 rounded-xl col-span-2">
                     <div className="text-[9px] text-text-muted uppercase font-bold tracking-wider">Rating</div>
@@ -497,11 +511,11 @@ export default function Menu() {
               </div>
 
               {/* Sizing portions inside detail modal */}
-              {selectedItem.sizes.length > 1 && (
+              {getItemSizes(selectedItem).length > 1 && (
                 <div className="space-y-2 pt-2 border-t border-white/5">
                   <span className="text-[9px] font-bold text-white uppercase tracking-wider block">Portions:</span>
                   <div className="flex flex-wrap gap-1.5">
-                    {selectedItem.sizes.map((s) => {
+                    {getItemSizes(selectedItem).map((s: any) => {
                       const active = getActiveSize(selectedItem) === s.size;
                       return (
                         <button
@@ -528,7 +542,7 @@ export default function Menu() {
                   <span className="text-[10px] text-text-muted uppercase">Portion Price</span>
                   <div className="text-xl font-black text-white">
                     Rs. {Math.round(
-                      (selectedItem.sizes.find((s) => s.size === getActiveSize(selectedItem))?.price || selectedItem.price) *
+                      (getItemSizes(selectedItem).find((s: any) => s.size === getActiveSize(selectedItem))?.price || selectedItem.price) *
                       (1 - selectedItem.discount / 100) *
                       getQuantity(selectedItem.id)
                     )}
@@ -552,12 +566,6 @@ export default function Menu() {
           </div>
         </div>
       )}
-
-      {/* 
-        To restore backend API loading in the future:
-        1. Uncomment the useEffect fetch hook in our previous revision.
-        2. Map loaded items to grouping lists dynamically.
-      */}
 
     </div>
   );
