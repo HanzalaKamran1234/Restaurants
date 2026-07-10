@@ -109,7 +109,7 @@ async function main() {
     {
       name: 'Chicken Leg Piece',
       description: 'Crispy, golden-fried chicken leg piece seasoned in rich Pakistani spices.',
-      image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&q=80&w=800',
       price: 450,
       sizes: JSON.stringify([{ size: 'Regular', price: 450 }]),
       prepTime: 12,
@@ -120,7 +120,7 @@ async function main() {
     {
       name: 'Chicken Chest Piece',
       description: 'Premium breast chunk of golden-fried chicken chest portion, crisp exterior and juicy tender interior.',
-      image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=800',
       price: 520,
       sizes: JSON.stringify([{ size: 'Regular', price: 520 }]),
       prepTime: 15,
@@ -142,7 +142,7 @@ async function main() {
     {
       name: 'Cheeseburger + Fries',
       description: 'Gourmet smashed patty layered with melted cheddar cheese slice and premium salted fries.',
-      image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&q=80&w=800',
       price: 550,
       sizes: JSON.stringify([{ size: 'Regular', price: 550 }]),
       prepTime: 12,
@@ -153,7 +153,7 @@ async function main() {
     {
       name: 'Hot Wings',
       description: 'Crispy batter-fried wings tossed in a spicy, fiery house glaze.',
-      image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1608039829572-78524f79c4c7?auto=format&fit=crop&q=80&w=800',
       price: 480,
       sizes: JSON.stringify([
         { size: '6 Pieces', price: 480 },
@@ -167,7 +167,7 @@ async function main() {
     {
       name: 'Shawarma',
       description: 'Slow-roasted chicken shavings wrapped in soft pita bread with garlic mayo and pickles.',
-      image: 'https://images.unsplash.com/photo-1561651823-34fed022540e?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1642683215286-9bd6583907c1?auto=format&fit=crop&q=80&w=800',
       price: 180,
       sizes: JSON.stringify([
         { size: 'Medium', price: 180 },
@@ -181,13 +181,52 @@ async function main() {
     {
       name: 'Paratha Roll',
       description: 'Tandoori spiced chicken cubes or beef boti rolled inside a crispy paratha with chatni.',
-      image: 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&q=80&w=800',
       price: 280,
       sizes: JSON.stringify([{ size: 'Regular', price: 280 }]),
       prepTime: 10,
       categoryId: dbCategories['paratha-roll'],
       servingSize: '1 Person',
       ingredients: 'Chicken boti, crispy paratha, mint chutney, onions'
+    },
+    {
+      name: 'Spring Roll',
+      description: 'Crispy deep-fried pastry rolls filled with shredded seasonal vegetables and spices.',
+      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=800',
+      price: 50,
+      sizes: JSON.stringify([{ size: 'Small', price: 50 }]),
+      prepTime: 8,
+      categoryId: dbCategories['spring-rolls'],
+      servingSize: '1 Person',
+      ingredients: 'Pastry sheet, cabbage, carrot, soy sauce, black pepper'
+    },
+    {
+      name: 'Samosa',
+      description: 'Traditional crispy pastry triangles stuffed with spiced potatoes and peas.',
+      image: 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&q=80&w=800',
+      price: 25,
+      sizes: JSON.stringify([
+        { size: 'Small', price: 25 },
+        { size: 'Large', price: 50 }
+      ]),
+      prepTime: 8,
+      categoryId: dbCategories['samosa'],
+      servingSize: '1 Person',
+      ingredients: 'Flour, potatoes, green peas, cumin, coriander'
+    },
+    {
+      name: 'Chicken Samosa',
+      description: 'Premium crispy triangles filled with minced chicken and traditional spices.',
+      image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=800',
+      price: 30,
+      sizes: JSON.stringify([
+        { size: 'Small', price: 30 },
+        { size: 'Large', price: 70 }
+      ]),
+      prepTime: 10,
+      categoryId: dbCategories['chicken-samosa'],
+      servingSize: '1 Person',
+      ingredients: 'Pastry sheet, minced chicken, onions, green chilies, spices'
     },
     {
       name: 'Club Sandwich',
@@ -201,15 +240,59 @@ async function main() {
       ingredients: 'Bread slice, chicken breast, egg omelette, cheese slice, lettuce'
     },
     {
+      name: 'Chicken Macaroni',
+      description: 'Delectable macaroni stir-fried with tender chicken chunks, bell peppers, and local spices.',
+      image: 'https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&q=80&w=800',
+      price: 350,
+      sizes: JSON.stringify([{ size: 'Per Head', price: 350 }]),
+      prepTime: 12,
+      categoryId: dbCategories['pasta-macaroni'],
+      servingSize: '1 Person',
+      ingredients: 'Macaroni, chicken chunks, bell pepper, soy sauce, spices'
+    },
+    {
+      name: 'Beef Macaroni',
+      description: 'Savory stir-fried macaroni cooked with spicy minced beef and robust sauces.',
+      image: 'https://images.unsplash.com/photo-1621510456681-23a23cfb5f57?auto=format&fit=crop&q=80&w=800',
+      price: 380,
+      sizes: JSON.stringify([{ size: 'Per Head', price: 380 }]),
+      prepTime: 15,
+      categoryId: dbCategories['pasta-macaroni'],
+      servingSize: '1 Person',
+      ingredients: 'Macaroni, minced beef, onion, tomatoes, hot spices'
+    },
+    {
+      name: 'Spaghetti',
+      description: 'Classic spaghetti strands tossed in a rich, savory tomato sauce with choice herbs.',
+      image: 'https://images.unsplash.com/photo-1516100882582-76c9a2868192?auto=format&fit=crop&q=80&w=800',
+      price: 380,
+      sizes: JSON.stringify([{ size: 'Per Head', price: 380 }]),
+      prepTime: 15,
+      categoryId: dbCategories['pasta-macaroni'],
+      servingSize: '1 Person',
+      ingredients: 'Spaghetti, tomato puree, olive oil, basil, chicken cubes'
+    },
+    {
       name: 'Alfredo Pasta',
       description: 'Rich creamy white cheese sauce with fettuccine pasta and grilled chicken.',
-      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&q=80&w=800',
       price: 480,
       sizes: JSON.stringify([{ size: 'Per Head', price: 480 }]),
       prepTime: 15,
       categoryId: dbCategories['pasta-macaroni'],
       servingSize: '1 Person',
       ingredients: 'Fettuccine, heavy cream, parmesan, mushrooms, chicken strips'
+    },
+    {
+      name: 'Dal Chawal',
+      description: 'Traditional Pakistani comfort meal of slow-cooked spicy lentils served over steamed basmati rice.',
+      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=800',
+      price: 300,
+      sizes: JSON.stringify([{ size: 'Per Plate', price: 300 }]),
+      prepTime: 10,
+      categoryId: dbCategories['desi-cuisine'],
+      servingSize: '1 Person',
+      ingredients: 'Lentils, basmati rice, cumin, garlic, red chili tarka'
     },
     {
       name: 'Chicken Biryani',
@@ -226,9 +309,48 @@ async function main() {
       ingredients: 'Basmati rice, chicken, potato, special biryani masala, saffron'
     },
     {
+      name: 'Chicken Pulao',
+      description: 'Mildly spiced, fragrant basmati rice cooked in rich chicken stock and whole spices.',
+      image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&q=80&w=800',
+      price: 450,
+      sizes: JSON.stringify([
+        { size: 'Half KG', price: 450 },
+        { size: '1 KG', price: 900 }
+      ]),
+      prepTime: 15,
+      categoryId: dbCategories['desi-cuisine'],
+      servingSize: '1-3 Persons',
+      ingredients: 'Basmati rice, chicken stock, cardamom, cloves, cinnamon'
+    },
+    {
+      name: 'Haleem',
+      description: 'Slow-cooked stew of barley, wheat, lentils, and beef shredded to a perfect creamy texture.',
+      image: 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&q=80&w=800',
+      price: 250,
+      sizes: JSON.stringify([{ size: 'Per Head', price: 250 }]),
+      prepTime: 10,
+      categoryId: dbCategories['desi-cuisine'],
+      servingSize: '1 Person',
+      ingredients: 'Beef, wheat, barley, lentils, ginger, fried onion garnish'
+    },
+    {
+      name: 'White Chicken Karahi',
+      description: 'Karachi style chicken wok stir-fried in a rich yogurt and cream gravy with black pepper.',
+      image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&q=80&w=800',
+      price: 900,
+      sizes: JSON.stringify([
+        { size: 'Half KG', price: 900 },
+        { size: '1 KG', price: 1700 }
+      ]),
+      prepTime: 25,
+      categoryId: dbCategories['karahi'],
+      servingSize: '2-4 Persons',
+      ingredients: 'Chicken cubes, yogurt, cream, ginger, green chili, black pepper'
+    },
+    {
       name: 'Saag',
       description: 'Saag cooked in pure desi ghee with mustard leaves and authentic herbs.',
-      image: 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&q=80&w=800',
       price: 250,
       sizes: JSON.stringify([{ size: 'Per Head', price: 250 }]),
       prepTime: 10,
@@ -237,9 +359,34 @@ async function main() {
       ingredients: 'Mustard leaves, spinach, butter, desi ghee'
     },
     {
+      name: 'Curry Pakora',
+      description: 'Traditional tangy yogurt gram flour curry with crispy vegetable pakoras.',
+      image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=800',
+      price: 280,
+      sizes: JSON.stringify([{ size: 'Per Head', price: 280 }]),
+      prepTime: 12,
+      categoryId: dbCategories['desi-cuisine'],
+      servingSize: '1 Person',
+      ingredients: 'Yogurt, gram flour, fenugreek leaves, spices, potato pakora'
+    },
+    {
+      name: 'Chicken Karahi',
+      description: 'Spicy chicken karahi cooked in wok with tomatoes, green chilies, and aromatic spices.',
+      image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&q=80&w=800',
+      price: 800,
+      sizes: JSON.stringify([
+        { size: 'Half KG', price: 800 },
+        { size: '1 KG', price: 1550 }
+      ]),
+      prepTime: 25,
+      categoryId: dbCategories['karahi'],
+      servingSize: '2-4 Persons',
+      ingredients: 'Chicken pieces, tomatoes, ginger, green chilies, spices'
+    },
+    {
       name: 'Mutton Karahi',
       description: 'Luxury mutton stir-fried in a traditional wok with fresh tomatoes, ginger, and desi ghee.',
-      image: 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=800',
       price: 1350,
       sizes: JSON.stringify([
         { size: 'Half KG', price: 1350 },
