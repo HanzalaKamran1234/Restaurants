@@ -95,10 +95,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     setIsMounted(true);
     const savedCart = localStorage.getItem('ziyafat_cart');
-    const savedLang = localStorage.getItem('ziyafat_lang');
 
     if (savedCart) setCart(JSON.parse(savedCart));
-    if (savedLang) setLanguage(savedLang as 'en' | 'ur');
 
     loadDeliveryAreas();
   }, []);
@@ -269,8 +267,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleLanguage = (lang: 'en' | 'ur') => {
-    setLanguage(lang);
-    localStorage.setItem('ziyafat_lang', lang);
+    // Enforce English only, no-op
   };
 
   return (

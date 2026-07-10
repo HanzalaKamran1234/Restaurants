@@ -8,7 +8,7 @@ import { translations } from '../utils/translations';
 import { ShoppingBag, User, LogOut, LayoutDashboard, Menu as MenuIcon, X } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
-  const { cart, user, logoutUser, language, setLanguage, setIsCartOpen } = useApp();
+  const { cart, user, logoutUser, language, setIsCartOpen } = useApp();
   const pathname = usePathname();
   const t = translations[language];
 
