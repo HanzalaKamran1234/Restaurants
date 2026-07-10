@@ -5,7 +5,7 @@ import { MessageSquare, Phone } from 'lucide-react';
 
 export const FloatingActions: React.FC = () => {
   const whatsappNumber = '923700349146';
-  const phoneNumber = '0370349146';
+  const phoneNumber = '03700349146';
   const welcomeText = encodeURIComponent("Salam Ziyafat! I'd like to ask about today's specials.");
 
   return (

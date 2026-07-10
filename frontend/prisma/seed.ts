@@ -41,7 +41,7 @@ async function main() {
       email: 'admin@ziyafat.com',
       fullName: 'Ziyafat Admin',
       role: 'admin',
-      phone: '0370349146',
+      phone: '03700349146',
       whatsapp: '+923700349146',
     },
   });
@@ -74,7 +74,7 @@ async function main() {
     data: [
       { key: 'logo_text', value: 'ضیافت' },
       { key: 'website_status', value: 'OPEN' },
-      { key: 'contact_phone', value: '0370349146' },
+      { key: 'contact_phone', value: '03700349146' },
       { key: 'contact_email', value: 'info@ziyafat.com' },
     ],
   });
@@ -167,7 +167,7 @@ async function main() {
     {
       name: 'Shawarma',
       description: 'Slow-roasted chicken shavings wrapped in soft pita bread with garlic mayo and pickles.',
-      image: 'https://images.unsplash.com/photo-1642683215286-9bd6583907c1?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1637806930600-37fa8892069d?auto=format&fit=crop&q=80&w=800',
       price: 180,
       sizes: JSON.stringify([
         { size: 'Medium', price: 180 },
@@ -203,7 +203,7 @@ async function main() {
     {
       name: 'Samosa',
       description: 'Traditional crispy pastry triangles stuffed with spiced potatoes and peas.',
-      image: 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1610192244261-3f33de3f55e4?auto=format&fit=crop&q=80&w=800',
       price: 25,
       sizes: JSON.stringify([
         { size: 'Small', price: 25 },
@@ -253,7 +253,7 @@ async function main() {
     {
       name: 'Beef Macaroni',
       description: 'Savory stir-fried macaroni cooked with spicy minced beef and robust sauces.',
-      image: 'https://images.unsplash.com/photo-1621510456681-23a23cfb5f57?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&q=80&w=800',
       price: 380,
       sizes: JSON.stringify([{ size: 'Per Head', price: 380 }]),
       prepTime: 15,
@@ -264,7 +264,7 @@ async function main() {
     {
       name: 'Spaghetti',
       description: 'Classic spaghetti strands tossed in a rich, savory tomato sauce with choice herbs.',
-      image: 'https://images.unsplash.com/photo-1516100882582-76c9a2868192?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&q=80&w=800',
       price: 380,
       sizes: JSON.stringify([{ size: 'Per Head', price: 380 }]),
       prepTime: 15,
