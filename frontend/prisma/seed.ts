@@ -41,8 +41,8 @@ async function main() {
       email: 'admin@ziyafat.com',
       fullName: 'Ziyafat Admin',
       role: 'admin',
-      phone: '+923001234567',
-      whatsapp: '+923001234567',
+      phone: '0370349146',
+      whatsapp: '+923700349146',
     },
   });
 
@@ -74,7 +74,7 @@ async function main() {
     data: [
       { key: 'logo_text', value: 'ضیافت' },
       { key: 'website_status', value: 'OPEN' },
-      { key: 'contact_phone', value: '03001234567' },
+      { key: 'contact_phone', value: '0370349146' },
       { key: 'contact_email', value: 'info@ziyafat.com' },
     ],
   });

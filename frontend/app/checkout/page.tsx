@@ -318,7 +318,7 @@ export default function Checkout() {
               <label className="text-xs text-text-muted">WhatsApp Number (For order details)</label>
               <input
                 type="text"
-                placeholder="e.g. 03331234567"
+                placeholder="e.g. 0370349146"
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-primary placeholder:text-text-muted"

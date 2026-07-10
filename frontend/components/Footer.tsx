@@ -90,7 +90,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3.5 text-xs text-text-muted">
               <li className="flex items-center gap-2">
                 <Phone size={14} className="text-primary-light" />
-                <a href="tel:+923001234567" className="hover:text-white transition-colors">+92 300 1234567</a>
+                <a href="tel:0370349146" className="hover:text-white transition-colors">0370349146</a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail size={14} className="text-primary-light" />
