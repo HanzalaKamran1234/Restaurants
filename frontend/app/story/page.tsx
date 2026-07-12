@@ -12,7 +12,7 @@ export default function Story() {
       
       {/* Header */}
       <div className="text-center space-y-4 max-w-2xl mx-auto">
-        <span className="text-xs tracking-[0.25em] text-primary font-bold uppercase">The Vestra Legacy</span>
+        <span className="text-xs tracking-[0.25em] text-primary font-bold uppercase">THE VESTRA Legacy</span>
         <h1 className="text-2xl sm:text-4xl font-serif tracking-widest text-white uppercase">Our Editorial Journey</h1>
         <p className="text-xs sm:text-sm text-text-muted leading-relaxed font-light">
           Redefining international fashion standards with an uncompromising commitment to minimalist aesthetics, structural tailoring, and premium fabrics.
@@ -24,7 +24,7 @@ export default function Story() {
         <div className="space-y-6">
           <h2 className="text-xl sm:text-2xl font-serif tracking-widest text-white uppercase">A Minimalist Silhouette Transformed</h2>
           <p className="text-xs sm:text-sm text-text-muted leading-relaxed font-light">
-            In Latin, <strong>Vestra</strong> represents ownership and identity. We founded THE VESTRA with a singular mission: to construct luxury essentials that empower individuals to wear confidence.
+            In Latin, <strong>THE VESTRA</strong> represents ownership and identity. We founded THE VESTRA with a singular mission: to construct luxury essentials that empower individuals to wear confidence.
           </p>
           <p className="text-xs sm:text-sm text-text-muted leading-relaxed font-light">
             Every garment is crafted from hand-picked, extra-long staple combed cotton. Every seam is double-flatlocked for durability. We believe that everyday clothing should feel premium and look like a billion-dollar statement.
@@ -38,7 +38,7 @@ export default function Story() {
         <div className="h-80 sm:h-96 rounded overflow-hidden border border-white/10 relative shadow-2xl bg-surface">
           <img
             src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=800"
-            alt="Vestra Tailoring Studio"
+            alt="THE VESTRA Tailoring Studio"
             className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-60"></div>

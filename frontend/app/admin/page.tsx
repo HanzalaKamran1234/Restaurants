@@ -56,6 +56,7 @@ interface AdminProduct {
   discount: number;
   fabric: string;
   fit: string;
+  brand: string;
   available: boolean;
   categoryId: string;
   collectionId?: string;
@@ -124,6 +125,7 @@ export default function AdminDashboard() {
   const [prodDiscount, setProdDiscount] = useState('0');
   const [prodImg, setProdImg] = useState(''); // Primary image
   const [prodGallery, setProdGallery] = useState<string>(''); // comma separated image URLs
+  const [prodBrand, setProdBrand] = useState('THE VESTRA');
   const [prodAvailable, setProdAvailable] = useState(true);
   const [prodVariants, setProdVariants] = useState<Array<{ color: string; size: string; inventory: number }>>([
     { color: 'Black', size: 'M', inventory: 50 }
@@ -239,6 +241,7 @@ export default function AdminDashboard() {
     setProdDesc('');
     setProdFabric('100% Combed Cotton');
     setProdFit('Relaxed Fit');
+    setProdBrand('THE VESTRA');
     setProdImg('');
     setProdGallery('');
     setProdPrice('');
@@ -256,6 +259,7 @@ export default function AdminDashboard() {
     setProdDesc(prod.description);
     setProdFabric(prod.fabric);
     setProdFit(prod.fit);
+    setProdBrand(prod.brand || 'THE VESTRA');
     setProdImg(prod.images?.[0]?.url || '');
     setProdGallery(prod.images?.slice(1).map(img => img.url).join(', ') || '');
     setProdPrice(prod.price.toString());
@@ -311,6 +315,7 @@ export default function AdminDashboard() {
       discount: parseFloat(prodDiscount || '0'),
       fabric: prodFabric,
       fit: prodFit,
+      brand: prodBrand,
       categoryId: prodCatId,
       collectionId: prodCollId || undefined,
       image: prodImg,
@@ -640,6 +645,7 @@ export default function AdminDashboard() {
               <thead>
                 <tr className="border-b border-white/5 text-[9px] text-text-muted uppercase tracking-wider font-bold">
                   <th className="py-3 px-2">Garment</th>
+                  <th className="py-3 px-2">Brand</th>
                   <th className="py-3 px-2">Category</th>
                   <th className="py-3 px-2">Collection</th>
                   <th className="py-3 px-2">Base Price</th>
@@ -663,6 +669,7 @@ export default function AdminDashboard() {
                           <div className="text-[10px] text-text-muted italic mt-0.5">{item.fabric}</div>
                         </div>
                       </td>
+                      <td className="py-3.5 px-2 text-white font-medium uppercase">{item.brand}</td>
                       <td className="py-3.5 px-2 text-white font-medium">{item.category?.name}</td>
                       <td className="py-3.5 px-2 text-text-muted font-medium">{item.collection?.name || 'None'}</td>
                       <td className="py-3.5 px-2 text-white font-medium font-sans">Rs. {item.price}</td>
@@ -818,7 +825,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Vestra Heavyweight Oversized Tee"
+                    placeholder="e.g. THE VESTRA Heavyweight Oversized Tee"
                     value={prodName}
                     onChange={(e) => setProdName(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded p-2.5 text-xs text-white focus:outline-none focus:border-primary font-light"
@@ -879,7 +886,19 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-text-muted uppercase block tracking-wider">Brand Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Springfield"
+                    value={prodBrand}
+                    onChange={(e) => setProdBrand(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded p-2.5 text-xs text-white focus:outline-none focus:border-primary font-light"
+                  />
+                </div>
+
                 <div className="space-y-1">
                   <label className="text-[10px] text-text-muted uppercase block tracking-wider">Fabric Material details</label>
                   <input

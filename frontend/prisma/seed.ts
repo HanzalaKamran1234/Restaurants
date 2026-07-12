@@ -103,6 +103,15 @@ async function main() {
     }
   });
 
+  const newArrival = await prisma.collection.create({
+    data: {
+      name: 'New Arrival',
+      slug: 'new-arrival',
+      description: 'The first clothing collection from Springfield. Premium fabrics, comfort, modern fit, and minimal design.',
+      image: '/images/products/explore_further_front.jpg'
+    }
+  });
+
   // 5. Create Categories
   const categoriesData = [
     { name: 'T-Shirts', slug: 't-shirts', image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800' },
@@ -130,13 +139,110 @@ async function main() {
   // 6. Create Premium Products
   const productsData = [
     {
-      name: 'Vestra Heavyweight Oversized Tee',
+      name: 'Springfield Explore Further Graphic Tee',
+      description: 'Experience high-end comfort and premium fabric with this Springfield Explore Further Graphic Tee. Featuring a modern fit, a minimal design of the green earth motif on the chest, and an elaborate "Ride and Seek" map on the back, this everyday wear tee boasts a soft feel and a luxury finish for long-lasting sophistication.',
+      price: 999,
+      discount: 0,
+      rating: 4.9,
+      fabric: '100% Premium Organic Combed Cotton (240GSM)',
+      fit: 'Modern Relaxed Fit',
+      brand: 'Springfield',
+      categoryId: categories['t-shirts'],
+      collectionId: newArrival.id,
+      images: [
+        '/images/products/explore_further_front.jpg',
+        '/images/products/explore_further_back.jpg'
+      ],
+      variants: [
+        { color: 'Ivory White', size: 'XS', inventory: 25 },
+        { color: 'Ivory White', size: 'S', inventory: 25 },
+        { color: 'Ivory White', size: 'M', inventory: 25 },
+        { color: 'Ivory White', size: 'L', inventory: 25 },
+        { color: 'Ivory White', size: 'XL', inventory: 25 },
+        { color: 'Ivory White', size: 'XXL', inventory: 25 }
+      ]
+    },
+    {
+      name: 'Springfield Vintage Culture Graphic Tee',
+      description: 'Bring a classic retro feel to your wardrobe with the Springfield Vintage Culture Graphic Tee. Structured with premium fabric and featuring a modern fit, this everyday wear garment is designed with a vintage records logo on the front left chest and a bold turntable motif on the back. Enjoy a soft feel, long-lasting comfort, and a minimal design with a luxury finish.',
+      price: 999,
+      discount: 0,
+      rating: 4.8,
+      fabric: '100% Luxury Combed Cotton (220GSM)',
+      fit: 'Modern Regular Fit',
+      brand: 'Springfield',
+      categoryId: categories['t-shirts'],
+      collectionId: newArrival.id,
+      images: [
+        '/images/products/vintage_culture_front.jpg',
+        '/images/products/vintage_culture_back.jpg'
+      ],
+      variants: [
+        { color: 'Off-White', size: 'XS', inventory: 25 },
+        { color: 'Off-White', size: 'S', inventory: 25 },
+        { color: 'Off-White', size: 'M', inventory: 25 },
+        { color: 'Off-White', size: 'L', inventory: 25 },
+        { color: 'Off-White', size: 'XL', inventory: 25 },
+        { color: 'Off-White', size: 'XXL', inventory: 25 }
+      ]
+    },
+    {
+      name: 'Springfield Luxury Ornament Tee',
+      description: 'Crafted from high-density charcoal fabric, the Springfield Luxury Ornament Tee defines understated elegance. Spun from premium fabric for maximum comfort and a soft feel, it showcases a minimal design ornamental mandala on the chest and back. With a modern fit, long-lasting resilience, and a premium luxury finish, it is a staple of contemporary luxury.',
+      price: 999,
+      discount: 0,
+      rating: 4.9,
+      fabric: '100% Fine Combed Cotton (250GSM)',
+      fit: 'Modern Fit',
+      brand: 'Springfield',
+      categoryId: categories['t-shirts'],
+      collectionId: newArrival.id,
+      images: [
+        '/images/products/cream_ornament_front.jpg',
+        '/images/products/cream_ornament_back.jpg'
+      ],
+      variants: [
+        { color: 'Charcoal Grey', size: 'XS', inventory: 25 },
+        { color: 'Charcoal Grey', size: 'S', inventory: 25 },
+        { color: 'Charcoal Grey', size: 'M', inventory: 25 },
+        { color: 'Charcoal Grey', size: 'L', inventory: 25 },
+        { color: 'Charcoal Grey', size: 'XL', inventory: 25 },
+        { color: 'Charcoal Grey', size: 'XXL', inventory: 25 }
+      ]
+    },
+    {
+      name: 'Springfield Alternative Culture Tee',
+      description: 'Constructed from heavyweight premium fabric, the Springfield Alternative Culture Tee is engineered to elevate your daily wear. A minimal design featuring grid art on the left chest and a prominent back graphic, this modern fit tee offers a soft feel, long-lasting comfort, and a luxury finish. Wear your confidence with Springfield.',
+      price: 999,
+      discount: 0,
+      rating: 4.7,
+      fabric: '100% Combed Cotton Terry (260GSM)',
+      fit: 'Modern Boxy Fit',
+      brand: 'Springfield',
+      categoryId: categories['t-shirts'],
+      collectionId: newArrival.id,
+      images: [
+        '/images/products/alternative_culture_front.jpg',
+        '/images/products/alternative_culture_back.jpg'
+      ],
+      variants: [
+        { color: 'Prussian White', size: 'XS', inventory: 25 },
+        { color: 'Prussian White', size: 'S', inventory: 25 },
+        { color: 'Prussian White', size: 'M', inventory: 25 },
+        { color: 'Prussian White', size: 'L', inventory: 25 },
+        { color: 'Prussian White', size: 'XL', inventory: 25 },
+        { color: 'Prussian White', size: 'XXL', inventory: 25 }
+      ]
+    },
+    {
+      name: 'THE VESTRA Heavyweight Oversized Tee',
       description: 'An architectural essential crafted from custom 280GSM loopback combed organic cotton. Featuring a tight ribbed collar, drop shoulders, and a clean structural drape that maintains its shape through wash and wear.',
       price: 2450,
       discount: 10,
       rating: 4.9,
       fabric: '100% Heavyweight Combed Organic Cotton (280GSM)',
       fit: 'Oversized Boxy Fit',
+      brand: 'THE VESTRA',
       categoryId: categories['oversized-t-shirts'],
       collectionId: essentialLoungewear.id,
       images: [
@@ -161,6 +267,7 @@ async function main() {
       rating: 4.8,
       fabric: '100% Mercerized Long-Staple Cotton (High Gauge)',
       fit: 'Relaxed Tailored Fit',
+      brand: 'THE VESTRA',
       categoryId: categories['polo-shirts'],
       collectionId: classicTailoring.id,
       images: [
@@ -184,6 +291,7 @@ async function main() {
       rating: 4.7,
       fabric: '100% Premium Egyptian Cotton (Two-Ply)',
       fit: 'Slim Tailored Fit',
+      brand: 'THE VESTRA',
       categoryId: categories['formal-shirts'],
       collectionId: classicTailoring.id,
       images: [
@@ -205,6 +313,7 @@ async function main() {
       rating: 5.0,
       fabric: '13.5oz Raw Japanese Selvedge Cotton Denim',
       fit: 'Classic Straight Leg',
+      brand: 'THE VESTRA',
       categoryId: categories['jeans'],
       images: [
         'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&q=80&w=800',
@@ -218,13 +327,14 @@ async function main() {
       ]
     },
     {
-      name: 'Vestra Heavyweight Loopback Hoodie',
+      name: 'THE VESTRA Heavyweight Loopback Hoodie',
       description: 'Featuring an ultra-clean double-lined hood without drawstrings for a streamlined editorial finish. Knit in a heavyweight 450GSM organic loopback fleece with side rib panels for maximum movement.',
       price: 6800,
       discount: 0,
       rating: 4.9,
       fabric: '100% Organic Loopback Cotton (450GSM)',
       fit: 'Relaxed Dropped Shoulder Fit',
+      brand: 'THE VESTRA',
       categoryId: categories['hoodies'],
       collectionId: essentialLoungewear.id,
       images: [
@@ -248,6 +358,7 @@ async function main() {
       rating: 5.0,
       fabric: '85% Virgin Wool, 15% Premium Cashmere',
       fit: 'Longline Tailored Trench',
+      brand: 'THE VESTRA',
       categoryId: categories['jackets'],
       collectionId: winterMinimalist.id,
       images: [
@@ -271,6 +382,7 @@ async function main() {
       rating: 4.6,
       fabric: '65% Rayon, 30% Polyester, 5% Wool Blend',
       fit: 'Relaxed Tapered Pleated Fit',
+      brand: 'THE VESTRA',
       categoryId: categories['trousers'],
       collectionId: classicTailoring.id,
       images: [
@@ -286,13 +398,14 @@ async function main() {
       ]
     },
     {
-      name: 'Vestra Fine Leather Everyday Belt',
+      name: 'THE VESTRA Fine Leather Everyday Belt',
       description: 'A timeless accessory built from vegetable-tanned full-grain Italian leather. Embellished with a matte brass solid buckle, designed to mature with a unique dark patina over years of use.',
       price: 2950,
       discount: 0,
       rating: 4.8,
       fabric: '100% Full-Grain Vegetable-Tanned Italian Leather',
       fit: 'Standard Belt Width (1.25 inches)',
+      brand: 'THE VESTRA',
       categoryId: categories['accessories'],
       images: [
         'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?auto=format&fit=crop&q=80&w=800',
@@ -318,6 +431,7 @@ async function main() {
         rating: prod.rating,
         fabric: prod.fabric,
         fit: prod.fit,
+        brand: prod.brand,
         categoryId: prod.categoryId,
         collectionId: prod.collectionId,
         available: true

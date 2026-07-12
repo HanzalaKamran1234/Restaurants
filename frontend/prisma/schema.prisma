@@ -73,6 +73,7 @@ model Product {
   shippingInfo String?          @default("Standard premium shipping 2-3 business days. Free shipping on orders over Rs. 5000.")
   returnsInfo  String?          @default("30-day complimentary returns and exchanges. Items must be in original condition with tags.")
   available    Boolean          @default(true)
+  brand        String           @default("THE VESTRA")
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
   

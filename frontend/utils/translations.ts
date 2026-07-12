@@ -11,7 +11,7 @@ const englishTranslations = {
   register: "Create Account",
   logout: "Sign Out",
   dashboard: "Account",
-  adminPanel: "Vestra CMS",
+  adminPanel: "THE VESTRA CMS",
   searchPlaceholder: "Search our collections...",
   addToCart: "Add to Bag",
   outOfStock: "Sold Out",

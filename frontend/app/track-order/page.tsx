@@ -18,7 +18,7 @@ export default function TrackOrderSearch() {
       <div className="glass-premium p-8 rounded border border-primary/20 space-y-6">
         <h1 className="text-xl font-serif tracking-widest text-white uppercase">Track Purchase</h1>
         <p className="text-xs text-text-muted leading-relaxed font-light">
-          Enter your VESTRA order reference code (e.g. your database ID or order code) to view the live status from packaging to shipping.
+          Enter your THE VESTRA order reference code (e.g. your database ID or order code) to view the live status from packaging to shipping.
         </p>
 
         <form onSubmit={handleSearchTrack} className="space-y-4">

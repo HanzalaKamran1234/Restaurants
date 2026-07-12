@@ -71,7 +71,7 @@ export const Footer: React.FC = () => {
 
         {/* Newsletter Column */}
         <div className="space-y-4">
-          <h4 className="text-[10px] font-serif font-bold tracking-[0.2em] text-white uppercase">The Vestra Letter</h4>
+          <h4 className="text-[10px] font-serif font-bold tracking-[0.2em] text-white uppercase">THE VESTRA Letter</h4>
           <p className="text-[11px] text-text-muted font-light leading-relaxed">
             Subscribe to receive priority access to seasonal lookbooks, capsule collections, and brand updates.
           </p>

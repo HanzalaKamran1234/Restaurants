@@ -37,6 +37,7 @@ interface ProductDetail {
   rating: number;
   fabric: string;
   fit: string;
+  brand: string;
   shippingInfo: string;
   returnsInfo: string;
   categoryId: string;
@@ -67,6 +68,23 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [qty, setQty] = useState<number>(1);
   const [added, setAdded] = useState(false);
+
+  // Zoom State
+  const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({});
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setZoomStyle({
+      transformOrigin: `${x}% ${y}%`,
+      transform: 'scale(1.8)',
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setZoomStyle({});
+  };
 
   // Accordion States
   const [activeAccordion, setActiveAccordion] = useState<string | null>('fabric');
@@ -174,6 +192,23 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     setTimeout(() => setAdded(false), 2000);
   };
 
+  const handleBuyNow = () => {
+    if (stockLevel <= 0) return;
+    
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      discount: product.discount,
+      image: product.images?.[0]?.url || '',
+      size: selectedSize,
+      color: selectedColor,
+      quantity: qty
+    }, qty);
+
+    window.location.href = '/checkout';
+  };
+
   const isFavorite = favorites.some((f) => f.id === product.id);
 
   return (
@@ -213,13 +248,18 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             </div>
 
             {/* Main Active Image (Col-span-10) */}
-            <div className="col-span-10 relative aspect-[3/4] overflow-hidden rounded-2xl border border-white/5 bg-secondaryBg group">
+            <div 
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              className="col-span-10 relative aspect-[3/4] overflow-hidden rounded-2xl border border-white/5 bg-secondaryBg group cursor-zoom-in"
+            >
               <img
                 src={activeImage}
                 alt={product.name}
-                className="w-full h-full object-cover grayscale transition-transform duration-700 ease-out group-hover:scale-105"
+                style={zoomStyle}
+                className="w-full h-full object-cover grayscale transition-transform duration-100 ease-out"
               />
-              <div className="absolute inset-0 bg-black/5"></div>
+              <div className="absolute inset-0 bg-black/5 pointer-events-none"></div>
             </div>
 
           </div>
@@ -229,7 +269,11 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             
             {/* Title & Brand */}
             <div className="space-y-3">
-              <span className="text-[9px] tracking-[0.3em] text-primary font-bold uppercase block">THE VESTRA CONCIERGE</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] tracking-[0.3em] text-primary font-bold uppercase">Brand: {product.brand || 'THE VESTRA'}</span>
+                <span className="text-text-muted text-[9px]">•</span>
+                <span className="text-text-muted text-[9px] tracking-[0.25em] uppercase">{product.category.name}</span>
+              </div>
               <h1 className="text-2xl sm:text-3xl font-serif tracking-widest text-white uppercase">{product.name}</h1>
               
               <div className="flex items-center gap-4 text-xs">
@@ -304,11 +348,11 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             ) : null}
 
             {/* Action Bar (Qty + Add to bag + Favorites) */}
-            <div className="flex gap-4 items-center">
+            <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
               
               {/* Qty selector */}
               {stockLevel > 0 && (
-                <div className="flex items-center bg-white/5 border border-white/10 rounded-lg h-12 px-3">
+                <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg h-12 px-3 sm:w-28 flex-shrink-0">
                   <button
                     onClick={() => setQty(prev => Math.max(1, prev - 1))}
                     className="p-1 hover:text-primary"
@@ -333,7 +377,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 disabled={stockLevel <= 0}
                 className={`flex-1 h-12 rounded-lg font-bold tracking-[0.15em] transition-all text-xs uppercase flex items-center justify-center gap-2 ${
                   stockLevel <= 0
-                    ? 'bg-white/5 text-text-muted border border-white/5 cursor-not-allowed'
+                    ? 'bg-white/5 text-text-muted border border-white/5 cursor-not-allowed w-full'
                     : added
                       ? 'bg-green-700 text-white border border-green-600'
                       : 'bg-primary text-black hover:bg-primary-light shadow-lg shadow-primary/10'
@@ -348,6 +392,16 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   </>
                 )}
               </button>
+
+              {/* Buy Now button */}
+              {stockLevel > 0 && (
+                <button
+                  onClick={handleBuyNow}
+                  className="flex-1 h-12 rounded-lg font-bold tracking-[0.15em] hover:bg-white hover:text-black border border-white text-white transition-all text-xs uppercase flex items-center justify-center gap-2"
+                >
+                  <span>BUY NOW</span>
+                </button>
+              )}
 
               {/* Favorite toggle */}
               {token && (

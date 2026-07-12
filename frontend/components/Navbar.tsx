@@ -113,7 +113,7 @@ export const Navbar: React.FC = () => {
                           className="flex items-center gap-2 px-5 py-2.5 text-text-muted hover:text-white hover:bg-white/5 transition-colors"
                         >
                           <LayoutDashboard size={13} />
-                          <span>VESTRA CMS</span>
+                          <span>THE VESTRA CMS</span>
                         </Link>
                       )}
 
