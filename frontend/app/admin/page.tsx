@@ -939,7 +939,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     required
-                    placeholder="https://images.unsplash.com/..."
+                    placeholder="/products/tshirts/product-01/image-01-front.png"
                     value={prodImg}
                     onChange={(e) => setProdImg(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded p-2.5 text-xs text-white focus:outline-none focus:border-primary font-light"
@@ -950,7 +950,7 @@ export default function AdminDashboard() {
                   <label className="text-[10px] text-text-muted uppercase block tracking-wider">Gallery Images (Comma separated URLs)</label>
                   <input
                     type="text"
-                    placeholder="https://image1.jpg, https://image2.jpg"
+                    placeholder="/products/tshirts/product-01/image-01-back.png"
                     value={prodGallery}
                     onChange={(e) => setProdGallery(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded p-2.5 text-xs text-white focus:outline-none focus:border-primary font-light"

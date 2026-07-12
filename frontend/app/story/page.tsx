@@ -37,7 +37,7 @@ export default function Story() {
 
         <div className="h-80 sm:h-96 rounded overflow-hidden border border-white/10 relative shadow-2xl bg-surface">
           <img
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=800"
+            src="/products/tshirts/product-02/image-02-front.png"
             alt="THE VESTRA Tailoring Studio"
             className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
           />

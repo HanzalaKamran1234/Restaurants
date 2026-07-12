@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     title: 'THE VESTRA | Premium Garments',
     description: 'Luxury garments crafted for modern elegance. Wear Confidence.',
     type: 'website',
-    images: [{ url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=800' }],
+    images: [{ url: '/products/tshirts/product-01/image-01-front.png' }],
   },
 };
 

@@ -75,9 +75,7 @@ export default function Shop() {
       .catch(() => {
         // Fallback static collections
         setCollections([
-          { id: 'col1', name: 'Winter Minimalist', slug: 'winter-minimalist' },
-          { id: 'col2', name: 'Essential Loungewear', slug: 'essential-loungewear' },
-          { id: 'col3', name: 'Classic Tailoring', slug: 'classic-tailoring' }
+          { id: 'col1', name: 'New Arrival', slug: 'new-arrival' }
         ]);
       });
   }, []);
@@ -126,15 +124,15 @@ export default function Shop() {
   }
 
   // Predefined filter options
-  const filterSizes = ['S', 'M', 'L', 'XL', '30', '32', '34', '36'];
-  const filterColors = ['Obsidian Black', 'Warm Ivory', 'Slate Grey', 'Desert Camel'];
+  const filterSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const filterColors = ['Ivory White', 'Off-White', 'Charcoal Grey', 'Prussian White'];
 
   return (
     <div className="w-full relative z-10 font-sans min-h-screen bg-background text-white">
       
       {/* 1. CINEMATIC SHOP BANNER */}
       <section className="relative h-[250px] flex items-center justify-center overflow-hidden border-b border-white/5 bg-secondaryBg">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center opacity-10 filter grayscale"></div>
+        <div className="absolute inset-0 bg-[url('/products/tshirts/product-03/image-03-back.png')] bg-cover bg-center opacity-10 filter grayscale"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px] pointer-events-none"></div>
 
@@ -324,7 +322,7 @@ export default function Shop() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => {
                   const finalPrice = product.price * (1 - product.discount / 100);
-                  const mainImage = product.images?.[0]?.url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800';
+                  const mainImage = product.images?.[0]?.url || '/products/tshirts/product-01/image-01-front.png';
                   const hoverImage = product.images?.[1]?.url || mainImage;
                   
                   return (

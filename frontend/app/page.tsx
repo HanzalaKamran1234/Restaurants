@@ -83,7 +83,7 @@ export default function Home() {
       {/* 1. EDITORIAL HERO SECTION */}
       <section className="relative min-h-[95vh] flex items-center justify-center px-6 sm:px-8 lg:px-12 pt-16 pb-24">
         {/* Cinematic Backdrop Image */}
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&q=80&w=1600')] bg-cover bg-center opacity-25 filter grayscale"></div>
+        <div className="absolute inset-0 bg-[url('/products/tshirts/product-01/image-01-front.png')] bg-cover bg-center opacity-25 filter grayscale"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent"></div>
 
         <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
@@ -129,8 +129,8 @@ export default function Home() {
             {/* Showcase Image */}
             <div className="relative z-10 w-[350px] h-[470px] overflow-hidden border border-white/10 rounded-2xl shadow-2xl group">
               <img
-                src="https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&q=80&w=800"
-                alt="THE VESTRA Tailoring Look"
+                src="/products/tshirts/product-01/image-01-front.png"
+                alt="Springfield Explore Further Graphic Tee"
                 className="w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"></div>
@@ -138,10 +138,10 @@ export default function Home() {
               {/* Product Label Badge */}
               <div className="absolute bottom-6 left-6 right-6 p-4 glass rounded-xl flex items-center justify-between border border-white/10">
                 <div>
-                  <span className="text-[9px] text-text-muted tracking-widest block uppercase">Winter Minimalist</span>
-                  <span className="text-xs font-serif font-bold text-white tracking-wider uppercase mt-1 block">Cashmere Wool Trench</span>
+                  <span className="text-[9px] text-text-muted tracking-widest block uppercase">New Arrival</span>
+                  <span className="text-xs font-serif font-bold text-white tracking-wider uppercase mt-1 block">Explore Further Tee</span>
                 </div>
-                <span className="text-xs font-bold text-primary font-sans">Rs. 18,500</span>
+                <span className="text-xs font-bold text-primary font-sans">Rs. 999</span>
               </div>
             </div>
           </div>
@@ -149,71 +149,31 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 2. CAPSULE COLLECTIONS GRID */}
+      {/* 2. CURATED COLLECTION BANNER */}
       <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-24 relative border-t border-white/5">
         <div className="text-center space-y-3 mb-16">
-          <span className="text-[10px] tracking-[0.3em] text-primary uppercase font-bold">Curated Portfolios</span>
-          <h2 className="text-3xl sm:text-4xl font-serif font-medium text-white uppercase tracking-wider">THE SEASON CAPSULES</h2>
+          <span className="text-[10px] tracking-[0.3em] text-primary uppercase font-bold">Curated Portfolio</span>
+          <h2 className="text-3xl sm:text-4xl font-serif font-medium text-white uppercase tracking-wider">SPRINGFIELD SERIES</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Collection 1 */}
-          <Link href="/shop?collection=winter-minimalist" className="relative group overflow-hidden rounded-2xl h-[450px] border border-white/5 hover:border-primary/20 transition-all flex flex-col justify-end">
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10"></div>
-            <img
-              src="https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=800"
-              alt="Winter Minimalist"
-              className="absolute inset-0 w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-black/10 z-0"></div>
-            <div className="p-8 z-20 space-y-3">
-              <h3 className="text-lg font-serif font-bold text-white tracking-widest uppercase">Winter Minimalist</h3>
-              <p className="text-[11px] text-text-muted font-light leading-relaxed max-w-xs">Double-faced trench coats, structured wool layers, cashmere knits.</p>
-              <div className="flex items-center gap-1.5 text-[10px] text-primary font-bold tracking-widest uppercase pt-2">
-                <span>VIEW COLLECTION</span>
-                <ArrowRight size={11} className="group-hover:translate-x-1.5 transition-transform" />
-              </div>
+        <Link href="/shop" className="relative group overflow-hidden rounded-2xl h-[500px] border border-white/5 hover:border-primary/20 transition-all flex flex-col justify-end">
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10"></div>
+          <img
+            src="/products/tshirts/product-01/image-01-front.png"
+            alt="New Arrival"
+            className="absolute inset-0 w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700"
+          />
+          <div className="absolute inset-0 bg-black/20 z-0"></div>
+          <div className="p-8 sm:p-12 z-20 space-y-3">
+            <span className="text-[10px] tracking-[0.25em] text-primary font-bold uppercase">Featured Collection</span>
+            <h3 className="text-2xl sm:text-3xl font-serif font-bold text-white tracking-widest uppercase">New Arrival Capsule</h3>
+            <p className="text-xs sm:text-sm text-text-muted font-light leading-relaxed max-w-md">Experience high-density cotton, modern relaxed fits, and bespoke graphic art from the new Springfield series. Every piece is tailored with luxury finishing.</p>
+            <div className="flex items-center gap-1.5 text-[10px] text-primary font-bold tracking-widest uppercase pt-2">
+              <span>EXPLORE CAPSULE</span>
+              <ArrowRight size={11} className="group-hover:translate-x-1.5 transition-transform" />
             </div>
-          </Link>
-
-          {/* Collection 2 */}
-          <Link href="/shop?collection=essential-loungewear" className="relative group overflow-hidden rounded-2xl h-[450px] border border-white/5 hover:border-primary/20 transition-all flex flex-col justify-end">
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10"></div>
-            <img
-              src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800"
-              alt="Essential Loungewear"
-              className="absolute inset-0 w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-black/10 z-0"></div>
-            <div className="p-8 z-20 space-y-3">
-              <h3 className="text-lg font-serif font-bold text-white tracking-widest uppercase">Essential Loungewear</h3>
-              <p className="text-[11px] text-text-muted font-light leading-relaxed max-w-xs">Heavyweight loopback fleece, oversized comfort, structured sweats.</p>
-              <div className="flex items-center gap-1.5 text-[10px] text-primary font-bold tracking-widest uppercase pt-2">
-                <span>VIEW COLLECTION</span>
-                <ArrowRight size={11} className="group-hover:translate-x-1.5 transition-transform" />
-              </div>
-            </div>
-          </Link>
-
-          {/* Collection 3 */}
-          <Link href="/shop?collection=classic-tailoring" className="relative group overflow-hidden rounded-2xl h-[450px] border border-white/5 hover:border-primary/20 transition-all flex flex-col justify-end">
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10"></div>
-            <img
-              src="https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=800"
-              alt="Classic Tailoring"
-              className="absolute inset-0 w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-black/10 z-0"></div>
-            <div className="p-8 z-20 space-y-3">
-              <h3 className="text-lg font-serif font-bold text-white tracking-widest uppercase">Classic Tailoring</h3>
-              <p className="text-[11px] text-text-muted font-light leading-relaxed max-w-xs">Egyptian cotton shirting, high-gauge mercerized polos, tapered trousers.</p>
-              <div className="flex items-center gap-1.5 text-[10px] text-primary font-bold tracking-widest uppercase pt-2">
-                <span>VIEW COLLECTION</span>
-                <ArrowRight size={11} className="group-hover:translate-x-1.5 transition-transform" />
-              </div>
-            </div>
-          </Link>
-        </div>
+          </div>
+        </Link>
       </section>
 
       {/* 3. NEW ARRIVALS & BEST SELLERS */}
@@ -247,7 +207,7 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {featuredProducts.map((product) => {
               const finalPrice = product.price * (1 - product.discount / 100);
-              const mainImage = product.images?.[0]?.url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800';
+              const mainImage = product.images?.[0]?.url || '/products/tshirts/product-01/image-01-front.png';
               const hoverImage = product.images?.[1]?.url || mainImage;
               
               return (
@@ -370,7 +330,7 @@ export default function Home() {
 
       {/* 5. BRAND STORY BANNER */}
       <section className="relative h-[480px] flex items-center justify-center px-6 text-center border-t border-b border-white/5 bg-secondaryBg">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center opacity-10 filter grayscale"></div>
+        <div className="absolute inset-0 bg-[url('/products/tshirts/product-03/image-03-back.png')] bg-cover bg-center opacity-10 filter grayscale"></div>
         <div className="max-w-2xl mx-auto space-y-6 relative z-10">
           <span className="text-[9px] tracking-[0.35em] text-primary font-bold uppercase block">OUR PHILOSOPHY</span>
           <h2 className="text-3xl font-serif font-medium text-white uppercase tracking-widest leading-relaxed">
@@ -429,10 +389,10 @@ export default function Home() {
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=400',
-            'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=400',
-            'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&q=80&w=400',
-            'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=400'
+            '/products/tshirts/product-01/image-01-front.png',
+            '/products/tshirts/product-02/image-02-front.png',
+            '/products/tshirts/product-03/image-03-front.png',
+            '/products/tshirts/product-04/image-04-front.png'
           ].map((url, idx) => (
             <div key={idx} className="relative h-64 md:h-80 overflow-hidden rounded-xl border border-white/5 group">
               <img
