@@ -108,7 +108,7 @@ async function main() {
       name: 'New Arrival',
       slug: 'new-arrival',
       description: 'The first clothing collection from Springfield. Premium fabrics, comfort, modern fit, and minimal design.',
-      image: '/images/products/explore_further_front.jpg'
+      image: '/products/tshirts/product-01/image-01-front.jpg'
     }
   });
 
@@ -150,8 +150,8 @@ async function main() {
       categoryId: categories['t-shirts'],
       collectionId: newArrival.id,
       images: [
-        '/images/products/explore_further_front.jpg',
-        '/images/products/explore_further_back.jpg'
+        '/products/tshirts/product-01/image-01-front.jpg',
+        '/products/tshirts/product-01/image-01-back.jpg'
       ],
       variants: [
         { color: 'Ivory White', size: 'XS', inventory: 25 },
@@ -174,8 +174,8 @@ async function main() {
       categoryId: categories['t-shirts'],
       collectionId: newArrival.id,
       images: [
-        '/images/products/vintage_culture_front.jpg',
-        '/images/products/vintage_culture_back.jpg'
+        '/products/tshirts/product-02/image-02-front.jpg',
+        '/products/tshirts/product-02/image-02-back.jpg'
       ],
       variants: [
         { color: 'Off-White', size: 'XS', inventory: 25 },
@@ -198,8 +198,8 @@ async function main() {
       categoryId: categories['t-shirts'],
       collectionId: newArrival.id,
       images: [
-        '/images/products/cream_ornament_front.jpg',
-        '/images/products/cream_ornament_back.jpg'
+        '/products/tshirts/product-03/image-03-front.jpg',
+        '/products/tshirts/product-03/image-03-back.jpg'
       ],
       variants: [
         { color: 'Charcoal Grey', size: 'XS', inventory: 25 },
@@ -222,8 +222,8 @@ async function main() {
       categoryId: categories['t-shirts'],
       collectionId: newArrival.id,
       images: [
-        '/images/products/alternative_culture_front.jpg',
-        '/images/products/alternative_culture_back.jpg'
+        '/products/tshirts/product-04/image-04-front.jpg',
+        '/products/tshirts/product-04/image-04-back.jpg'
       ],
       variants: [
         { color: 'Prussian White', size: 'XS', inventory: 25 },
