@@ -32,8 +32,8 @@ async function main() {
       email: 'admin@thevestra.com',
       fullName: 'THE VESTRA Admin',
       role: 'admin',
-      phone: '03001234567',
-      whatsapp: '+923001234567',
+      phone: '03700349146',
+      whatsapp: '+923700349146',
     },
   });
 
@@ -67,7 +67,7 @@ async function main() {
     data: [
       { key: 'logo_text', value: 'THE VESTRA' },
       { key: 'website_status', value: 'OPEN' },
-      { key: 'contact_phone', value: '03001234567' },
+      { key: 'contact_phone', value: '03700349146' },
       { key: 'contact_email', value: 'concierge@thevestra.com' },
       { key: 'free_shipping_threshold', value: '5000' },
       { key: 'home_hero_title', value: 'WEAR CONFIDENCE.' },

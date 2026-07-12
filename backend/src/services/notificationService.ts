@@ -13,7 +13,7 @@ export interface OrderNotificationData {
 }
 
 export class NotificationService {
-  private static BUSINESS_WHATSAPP_NUMBER = '923001234567';
+  private static BUSINESS_WHATSAPP_NUMBER = '923700349146';
 
   /**
    * Generates a structured WhatsApp text message for order submission

@@ -275,7 +275,7 @@ export default function Checkout() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. 03001234567"
+                  placeholder="e.g. 03700349146"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded p-2.5 text-xs text-white focus:outline-none focus:border-primary placeholder:text-text-muted font-light"

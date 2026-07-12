@@ -33,7 +33,7 @@ const englishTranslations = {
   cod: "Cash on Delivery (COD)",
   landmarkPlaceholder: "Apartment, Suite, Unit, etc. (Optional)",
   addressPlaceholder: "Complete Shipping Address",
-  phonePlaceholder: "Phone / WhatsApp (e.g. 03001234567)",
+  phonePlaceholder: "Phone / WhatsApp (e.g. 03700349146)",
   namePlaceholder: "Recipient Name",
   notesPlaceholder: "Order notes (e.g. instructions for delivery partner)...",
   trackTitle: "Order Tracking",
