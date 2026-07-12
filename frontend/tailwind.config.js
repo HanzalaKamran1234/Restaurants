@@ -7,31 +7,35 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "#070707",
-        surface: "#0d0d0d",
-        card: "rgba(13, 13, 13, 0.7)",
+        background: "#0B0B0B",
+        secondaryBg: "#111111",
+        surface: "#1A1A1A",
         primary: {
-          DEFAULT: "#c41e3a", // Velvet Premium Red
-          dark: "#8b0000",
-          light: "#e63946",
+          DEFAULT: "#C8A96A", // Vestra Gold Accent
+          dark: "#A3864B",
+          light: "#E5D4B3",
         },
         gold: {
-          DEFAULT: "#d4af37", // Elegant Brass Gold
-          light: "#f3e5ab",
-          dark: "#aa7c11",
+          DEFAULT: "#C8A96A",
+          light: "#E5D4B3",
+          dark: "#A3864B",
         },
+        ivory: "#F8F6F2",
         text: {
-          DEFAULT: "#f5f5f7",
-          muted: "#a1a1a6",
+          DEFAULT: "#FFFFFF",
+          muted: "#B5B5B5",
         }
       },
       fontFamily: {
-        sans: ["Poppins", "Inter", "sans-serif"],
-        urdu: ["Noto Nastaliq Urdu", "serif"],
+        sans: ["Outfit", "Inter", "sans-serif"],
+        serif: ["Cinzel", "serif"],
       },
       backdropBlur: {
         xs: "2px",
       },
+      borderColor: {
+        premium: "rgba(255, 255, 255, 0.08)",
+      }
     },
   },
   plugins: [],

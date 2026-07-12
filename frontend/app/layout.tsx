@@ -9,14 +9,14 @@ import { FloatingActions } from '../components/FloatingActions';
 import { ClerkProvider } from '@clerk/nextjs';
 
 export const metadata: Metadata = {
-  title: 'Ziyafat (ضیافت) | Luxury Online Food Delivery Karachi',
-  description: 'Ziyafat brings traditional premium dining to your doorstep in North Nazimabad, Karachi. Savor our royal Fast Food and authentic Desi Khany.',
-  keywords: 'Ziyafat, Food Delivery Karachi, North Nazimabad Food, Luxury Restaurant Karachi, Biryani, Burgers, Pakistani Cuisine',
+  title: 'THE VESTRA | Wear Confidence.',
+  description: 'THE VESTRA is a world-class luxury minimalist fashion brand. Shop our premium collections of heavyweight tees, structured coats, raw denim, and bespoke leather goods.',
+  keywords: 'THE VESTRA, Luxury Fashion, Minimalist Clothing, Menswear Pakistan, International Luxury Wear, Premium Apparel, Heavyweight Oversized Tee',
   openGraph: {
-    title: 'Ziyafat (ضیافت) | Premium Dining',
-    description: 'Traditional culinary perfection delivered hot in Karachi.',
+    title: 'THE VESTRA | Premium Garments',
+    description: 'Luxury garments crafted for modern elegance. Wear Confidence.',
     type: 'website',
-    images: [{ url: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&q=80&w=800' }],
+    images: [{ url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=800' }],
   },
 };
 

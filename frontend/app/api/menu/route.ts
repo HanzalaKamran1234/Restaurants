@@ -6,28 +6,47 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
+    const collection = searchParams.get('collection');
     const search = searchParams.get('search');
-    const spiceLevel = searchParams.get('spiceLevel');
+    const size = searchParams.get('size');
+    const color = searchParams.get('color');
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
     const sort = searchParams.get('sort');
 
-    const whereClause: any = {};
+    const whereClause: any = { available: true };
 
     if (category) {
       whereClause.category = { slug: category };
+    }
+
+    if (collection) {
+      whereClause.collection = { slug: collection };
     }
 
     if (search) {
       whereClause.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
-        { ingredients: { contains: search, mode: 'insensitive' } },
+        { fabric: { contains: search, mode: 'insensitive' } },
       ];
     }
 
-    if (spiceLevel) {
-      whereClause.spiceLevel = spiceLevel.toUpperCase();
+    // Size / Color filter matching variants
+    if (size !== null && size !== 'all') {
+      whereClause.variants = {
+        some: { size: size, inventory: { gte: 0 } }
+      };
+    }
+
+    if (color !== null && color !== 'all') {
+      if (whereClause.variants) {
+        whereClause.variants.some.color = { contains: color, mode: 'insensitive' };
+      } else {
+        whereClause.variants = {
+          some: { color: { contains: color, mode: 'insensitive' } }
+        };
+      }
     }
 
     if (minPrice || maxPrice) {
@@ -41,18 +60,24 @@ export async function GET(req: Request) {
       if (sort === 'price-low') orderBy = { price: 'asc' };
       else if (sort === 'price-high') orderBy = { price: 'desc' };
       else if (sort === 'rating') orderBy = { rating: 'desc' };
+      else if (sort === 'newest') orderBy = { createdAt: 'desc' };
     }
 
-    const items = await prisma.menuItem.findMany({
+    const items = await prisma.product.findMany({
       where: whereClause,
-      include: { category: true },
+      include: {
+        category: true,
+        collection: true,
+        images: true,
+        variants: true,
+      },
       orderBy,
     });
 
     return NextResponse.json(items);
   } catch (error: any) {
-    console.error('Error fetching menu items:', error);
-    return NextResponse.json({ message: 'Error retrieving menu items', error: error.message }, { status: 500 });
+    console.error('Error fetching products:', error);
+    return NextResponse.json({ message: 'Error retrieving products', error: error.message }, { status: 500 });
   }
 }
 
@@ -68,46 +93,82 @@ export async function POST(req: Request) {
     const {
       name,
       description,
-      ingredients,
-      calories,
-      spiceLevel,
-      servingSize,
       price,
       discount,
-      available,
-      prepTime,
-      image,
-      sizes,
+      fabric,
+      fit,
+      shippingInfo,
+      returnsInfo,
       categoryId,
+      collectionId,
+      image, // Primary image
+      gallery, // Array of extra image URLs
+      variants, // Array of { color, size, inventory }
     } = await req.json();
 
     if (!name || !price || !categoryId || !image) {
-      return NextResponse.json({ message: 'Name, price, categoryId, and image are required' }, { status: 400 });
+      return NextResponse.json({ message: 'Name, price, categoryId, and primary image are required' }, { status: 400 });
     }
 
-    const serializedSizes = typeof sizes === 'object' ? JSON.stringify(sizes) : (sizes || '[]');
+    // Create Product transaction
+    const product = await prisma.$transaction(async (tx) => {
+      const prod = await tx.product.create({
+        data: {
+          name,
+          description: description || '',
+          price: parseFloat(price),
+          discount: discount ? parseFloat(discount) : 0,
+          fabric: fabric || '100% Combed Cotton',
+          fit: fit || 'Relaxed Fit',
+          shippingInfo: shippingInfo || undefined,
+          returnsInfo: returnsInfo || undefined,
+          categoryId,
+          collectionId: collectionId || null,
+        }
+      });
 
-    const item = await prisma.menuItem.create({
-      data: {
-        name,
-        description: description || '',
-        ingredients: ingredients || '',
-        calories: calories ? parseInt(calories) : null,
-        spiceLevel: spiceLevel || 'NONE',
-        servingSize: servingSize || '1 Person',
-        price: parseFloat(price),
-        discount: discount ? parseFloat(discount) : 0,
-        available: available !== undefined ? Boolean(available) : true,
-        prepTime: prepTime ? parseInt(prepTime) : 15,
-        image,
-        sizes: serializedSizes,
-        categoryId,
-      },
+      // Save Primary image
+      await tx.productImage.create({
+        data: {
+          url: image,
+          productId: prod.id,
+        }
+      });
+
+      // Save gallery images
+      if (Array.isArray(gallery)) {
+        for (const url of gallery) {
+          if (url) {
+            await tx.productImage.create({
+              data: { url, productId: prod.id }
+            });
+          }
+        }
+      }
+
+      // Save variants
+      if (Array.isArray(variants)) {
+        for (const variant of variants) {
+          if (variant.color && variant.size) {
+            await tx.productVariant.create({
+              data: {
+                productId: prod.id,
+                color: variant.color,
+                size: variant.size,
+                inventory: parseInt(variant.inventory) || 0,
+                sku: `${name.substring(0, 3).toUpperCase()}-${variant.color.substring(0, 2).toUpperCase()}-${variant.size}-${prod.id.substring(0, 4).toUpperCase()}`
+              }
+            });
+          }
+        }
+      }
+
+      return prod;
     });
 
-    return NextResponse.json(item, { status: 201 });
+    return NextResponse.json(product, { status: 201 });
   } catch (error: any) {
-    console.error('Error creating menu item:', error);
-    return NextResponse.json({ message: 'Error creating menu item', error: error.message }, { status: 500 });
+    console.error('Error creating product:', error);
+    return NextResponse.json({ message: 'Error creating product', error: error.message }, { status: 500 });
   }
 }

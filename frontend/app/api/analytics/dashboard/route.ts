@@ -36,7 +36,7 @@ export async function GET() {
     const allOrders = await prisma.order.findMany();
     const totalOrdersCount = allOrders.length;
     const pendingOrdersCount = allOrders.filter((o) => o.status === 'PENDING').length;
-    const preparingOrdersCount = allOrders.filter((o) => o.status === 'PREPARING').length;
+    const preparingOrdersCount = allOrders.filter((o) => o.status === 'PROCESSING' || o.status === 'SHIPPED').length;
     const completedOrdersCount = completedOrders.length;
     const cancelledOrdersCount = allOrders.filter((o) => o.status === 'CANCELLED').length;
 
@@ -48,7 +48,7 @@ export async function GET() {
     // AOV
     const averageOrderValue = completedOrdersCount > 0 ? parseFloat((totalRevenue / completedOrdersCount).toFixed(2)) : 0;
 
-    // 3. Customers
+    // 3. Customers count
     const customerCount = await prisma.profile.count();
     
     // Returning customers (profiles with > 1 order)

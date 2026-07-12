@@ -11,13 +11,13 @@ export default function Register() {
   const t = translations[language];
 
   return (
-    <div className="max-w-md mx-auto px-4 py-20 font-sans relative z-10 flex flex-col justify-center items-center">
-      <div className="glass-premium p-6 rounded-3xl border border-primary/20 space-y-6 w-full">
+    <div className="max-w-md mx-auto px-6 py-20 font-sans relative z-10 flex flex-col justify-center items-center">
+      <div className="glass-premium p-6 rounded border border-primary/20 space-y-6 w-full">
         
-        <div className="text-center space-y-1">
-          <span className="text-3xl font-extrabold text-primary font-urdu">ضیافت</span>
-          <h1 className="text-2xl font-bold text-white tracking-wide">Register Account</h1>
-          <p className="text-xs text-text-muted">Create a Ziyafat loyalty membership</p>
+        <div className="text-center space-y-2">
+          <span className="text-xl font-serif tracking-[0.25em] text-white uppercase block">THE VESTRA</span>
+          <h1 className="text-base font-serif tracking-widest text-white uppercase">{t.register}</h1>
+          <p className="text-[10px] text-text-muted uppercase tracking-wider font-light">Create a premium client profile</p>
         </div>
 
         <SignUp

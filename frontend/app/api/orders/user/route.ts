@@ -13,9 +13,13 @@ export async function GET() {
       where: { profileId: userId },
       include: {
         items: {
-          include: { menuItem: true },
+          include: {
+            product: {
+              include: { images: true }
+            },
+            variant: true
+          },
         },
-        area: true,
       },
       orderBy: { createdAt: 'desc' },
     });

@@ -19,11 +19,13 @@ export async function GET() {
     let profile = await prisma.profile.findUnique({
       where: { id: userId },
       include: {
-        addresses: {
-          include: { area: true },
-        },
+        addresses: true,
         favorites: {
-          include: { menuItem: true },
+          include: {
+            product: {
+              include: { images: true }
+            }
+          },
         },
         notifications: {
           orderBy: { createdAt: 'desc' },
@@ -34,7 +36,7 @@ export async function GET() {
     // Auto-sync: Create profile if it does not exist in our database yet
     if (!profile) {
       const email = clerkUser.emailAddresses[0]?.emailAddress || '';
-      const fullName = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Ziyafat Member';
+      const fullName = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'THE VESTRA Member';
       const imageUrl = clerkUser.imageUrl || null;
       const phone = clerkUser.phoneNumbers[0]?.phoneNumber || null;
 
@@ -51,11 +53,13 @@ export async function GET() {
           role,
         },
         include: {
-          addresses: {
-            include: { area: true },
-          },
+          addresses: true,
           favorites: {
-            include: { menuItem: true },
+            include: {
+              product: {
+                include: { images: true }
+              }
+            },
           },
           notifications: {
             orderBy: { createdAt: 'desc' },
@@ -64,17 +68,16 @@ export async function GET() {
       });
     }
 
-    // Adapt format to match legacy context format for easier integration
     return NextResponse.json({
       user: {
         id: profile.id,
         name: profile.fullName,
         email: profile.email,
-        role: profile.role.toUpperCase(), // Match frontend PENDING/ADMIN/CUSTOMER
+        role: profile.role.toUpperCase(), // Match uppercase ADMIN/CUSTOMER
         phone: profile.phone,
         whatsapp: profile.whatsapp,
         addresses: profile.addresses,
-        favoriteItems: profile.favorites.map((fav) => fav.menuItem),
+        favoriteItems: profile.favorites.map((fav) => fav.product),
         loyaltyPoints: profile.loyaltyPoints,
         notifications: profile.notifications,
       },

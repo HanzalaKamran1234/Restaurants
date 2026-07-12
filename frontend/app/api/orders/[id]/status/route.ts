@@ -29,9 +29,8 @@ export async function PATCH(
       where: { id },
       include: {
         items: {
-          include: { menuItem: true },
+          include: { product: true },
         },
-        area: true,
       },
     });
 
@@ -44,35 +43,32 @@ export async function PATCH(
       data: { status: upperStatus },
       include: {
         items: {
-          include: { menuItem: true },
+          include: { product: true },
         },
-        area: true,
       },
     });
 
-    // Determine notification data
+    // Determine notification details
     const notificationItems = order.items.map((i) => ({
-      name: `${i.menuItem.name} (${i.size})`,
+      name: `${i.product.name} (${i.color} / ${i.size})`,
       quantity: i.quantity,
       price: i.price,
     }));
 
     const notificationData: OrderNotificationData = {
       orderNumber: order.orderNumber,
-      customerName: 'Valued Customer',
-      phone: 'Customer Phone',
-      address: order.deliveryAddress,
-      area: order.area ? order.area.name : 'Delivery Area',
+      customerName: 'Valued Client',
+      phone: 'Client Phone',
+      address: order.shippingAddress,
       paymentMethod: order.paymentMethod,
       items: notificationItems,
       totalAmount: order.subtotal,
-      deliveryCharge: order.deliveryCharge,
-      tax: order.tax,
+      shippingCharge: order.shippingCharge,
       finalAmount: order.finalAmount,
     };
 
     // Trigger mock status update emails
-    if (upperStatus === 'PREPARING') {
+    if (upperStatus === 'PROCESSING' || upperStatus === 'SHIPPED') {
       const emailHtml = NotificationService.generateEmailTemplate('READY', notificationData);
       NotificationService.saveMockEmail(`order_${order.orderNumber}_ready_status.html`, emailHtml);
     } else if (upperStatus === 'DELIVERED') {

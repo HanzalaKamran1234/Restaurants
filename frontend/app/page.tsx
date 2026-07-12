@@ -3,210 +3,145 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { translations } from '../utils/translations';
-import { Search, ArrowRight, Star, Clock, ShoppingCart, ShieldCheck, Flame, Gift } from 'lucide-react';
+import { ArrowRight, Star, ShoppingBag, ShieldCheck, Sparkles, Eye, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 
-interface MenuItem {
+interface ProductImage {
+  url: string;
+}
+
+interface ProductVariant {
+  id: string;
+  color: string;
+  size: string;
+  inventory: number;
+}
+
+interface ProductItem {
   id: string;
   name: string;
   description: string;
   price: number;
   discount: number;
-  spiceLevel: string;
-  image: string;
   rating: number;
-  prepTime: number;
+  fabric: string;
+  fit: string;
+  images: ProductImage[];
+  variants: ProductVariant[];
 }
-
-const STATIC_FALLBACK_ITEMS: MenuItem[] = [
-  {
-    id: "f1",
-    name: "Ziyafat Royal Beef Burger",
-    description: "Gourmet double beef patties, melted cheddar, caramelized onions, house truffle mayo in a brioche bun.",
-    price: 850,
-    discount: 10,
-    spiceLevel: "MILD",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800",
-    rating: 4.8,
-    prepTime: 15
-  },
-  {
-    id: "d1",
-    name: "Special Spicy Chicken Biryani",
-    description: "Karachi style aromatic basmati rice layered with spicy chicken masala, potatoes, saffron, and fresh mint.",
-    price: 390,
-    discount: 10,
-    spiceLevel: "SPICY",
-    image: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&q=80&w=800",
-    rating: 4.9,
-    prepTime: 15
-  },
-  {
-    id: "d2",
-    name: "Desi Ghee Mutton Karahi",
-    description: "Premium mutton cooked in pure desi ghee with fresh ginger, ripe tomatoes, and green chilies.",
-    price: 2400,
-    discount: 0,
-    spiceLevel: "SPICY",
-    image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&q=80&w=800",
-    rating: 5.0,
-    prepTime: 30
-  },
-  {
-    id: "f2",
-    name: "Creamy Fettuccine Alfredo",
-    description: "Rich parmesan heavy cream sauce with sliced grilled chicken breast and fresh mushrooms over pasta.",
-    price: 950,
-    discount: 0,
-    spiceLevel: "NONE",
-    image: "https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&q=80&w=800",
-    rating: 4.9,
-    prepTime: 20
-  }
-];
 
 export default function Home() {
   const { language, addToCart } = useApp();
   const t = translations[language];
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [featuredItems, setFeaturedItems] = useState<MenuItem[]>(STATIC_FALLBACK_ITEMS);
+  const [featuredProducts, setFeaturedProducts] = useState<ProductItem[]>([]);
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Attempt to fetch fresh menu items from backend API
+    // Fetch products from backend menu/product API
     fetch('/api/menu')
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
-          // Take top 4 rated items
+          // Take top 4 rated items for homepage showcase
           const sorted = [...data].sort((a, b) => b.rating - a.rating).slice(0, 4);
-          setFeaturedItems(sorted);
+          setFeaturedProducts(sorted);
         }
+        setLoading(false);
       })
       .catch(() => {
-        // Fall back silently to static seed data if backend is offline
-        console.log("Using local static data for home specials");
+        console.log("Failed to load dynamic specials, using fallback");
+        setLoading(false);
       });
   }, []);
 
-  const reviews = [
+  const stylingReviews = [
     {
-      name: "Ayesha Siddiqui",
-      area: "North Nazimabad, Block L",
-      comment: "The Biryani is outstanding! It arrived steaming hot, packaged in a gorgeous premium cardboard box. The hospitality of Ziyafat is unmatched.",
+      name: "Sartorial Weekly",
+      area: "Editorial Review",
+      comment: "THE VESTRA has completely redefined the menswear landscape in South Asia. Their heavy combed organic cotton tees drape like architectural structures. Timeless minimalism at its peak.",
       rating: 5
     },
     {
-      name: "Bilal Farooqi",
-      area: "North Nazimabad, Block F",
-      comment: "Absolutely loved the Royal Beef Burger. The meat was smashed to perfection, juicy and flavorful. A truly five-star experience in Karachi.",
+      name: "Hassan Raza",
+      area: "Verified Collector",
+      comment: "The Selvedge denim is outstanding. Sourced and structured beautifully. It feels like wearing pure confidence. The packaging and custom box unboxing experience is extremely premium.",
       rating: 5
     },
     {
-      name: "Chef Zain-ul-Abideen",
-      area: "Culinary Critic",
-      comment: "The balance of authentic spices in their Mutton Karahi cooked in pure Desi Ghee is phenomenal. High-end dining standard delivered home.",
+      name: "Vogue Menswear",
+      area: "Critic",
+      comment: "Exceptional attention to details. From double-faced heavyweight loopback fleece to placket-less polos, they maintain an exquisite balance of relaxed comfort and formal precision.",
       rating: 5
     }
   ];
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/menu?search=${encodeURIComponent(searchQuery.trim())}`;
-    }
-  };
-
   return (
-    <div className="w-full relative z-10 font-sans overflow-hidden">
+    <div className="w-full relative z-10 font-sans overflow-hidden bg-background">
       
-      {/* 1. CINEMATIC HERO SECTION */}
-      <section className="relative min-h-[92vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-10 pb-20">
-        
-        {/* Background Image Parallax Overlay */}
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1543007630-9710e4a00a20?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center opacity-10 filter blur-xs"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-background/50"></div>
+      {/* 1. EDITORIAL HERO SECTION */}
+      <section className="relative min-h-[95vh] flex items-center justify-center px-6 sm:px-8 lg:px-12 pt-16 pb-24">
+        {/* Cinematic Backdrop Image */}
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&q=80&w=1600')] bg-cover bg-center opacity-25 filter grayscale"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent"></div>
 
-        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
           
           {/* Hero Left Content */}
-          <div className="space-y-6 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-xs font-bold text-primary-light">
-              <Flame size={13} className="animate-pulse" />
-              <span>{language === 'en' ? 'The Art of Royal Hospitality' : 'شاہی ضیافت کا منفرد فن'}</span>
+          <div className="space-y-8 text-center lg:text-left lg:col-span-7">
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-[10px] font-bold tracking-[0.2em] text-primary uppercase">
+              <Sparkles size={11} className="animate-pulse" />
+              <span>THE VESTRA EDITORIAL CAPSULE</span>
             </div>
             
-            <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight">
-              {language === 'en' ? (
-                <>
-                  Savor the Feast of <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-gold font-urdu font-black text-5xl sm:text-7xl">ضیافت</span>
-                </>
-              ) : (
-                <>
-                  روایتی لذت اور شاہی <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-gold font-urdu font-black text-6xl sm:text-8xl">ضیافت</span>
-                </>
-              )}
+            <h1 className="text-5xl sm:text-7xl font-serif font-black tracking-[0.08em] text-white leading-[1.1] uppercase">
+              WEAR <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-light">CONFIDENCE.</span>
             </h1>
 
-            <p className="text-sm sm:text-lg text-text-muted max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
-              {language === 'en' 
-                ? "Karachi's ultimate luxury food experience. Fusing the premium standards of a Michelin-starred kitchen with express gourmet delivery to North Nazimabad."
-                : "کراچی کا سب سے پرتعیش فوڈ ڈلیوری برانڈ۔ اب اپنے پسندیدہ دیسی کھانے اور فاسٹ فوڈ گھر بیٹھے حاصل کریں۔"}
+            <p className="text-xs sm:text-sm text-text-muted max-w-xl mx-auto lg:mx-0 leading-relaxed font-light tracking-wide">
+              An international design language tailored for modern men. Sculpted structures, heavyweight luxury weaves, and refined essentials engineered to withstand time. Designed for modern Pakistan and global horizons.
             </p>
 
-            {/* Instant Search Bar */}
-            <form onSubmit={handleSearchSubmit} className="max-w-md mx-auto lg:mx-0 mt-8">
-              <div className="relative flex items-center p-1 bg-white/5 border border-white/10 rounded-full focus-within:border-primary shadow-xl">
-                <Search className="text-text-muted ml-4" size={20} />
-                <input
-                  type="text"
-                  placeholder={t.searchPlaceholder}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent border-0 py-3 pl-3 pr-4 text-sm text-white focus:outline-none placeholder:text-text-muted"
-                />
-                <button
-                  type="submit"
-                  className="bg-primary hover:bg-primary-light text-white text-xs font-bold py-2.5 px-6 rounded-full flex items-center gap-1.5 transition-all focus:outline-none"
-                >
-                  <span>Explore</span>
-                  <ArrowRight size={14} />
-                </button>
-              </div>
-            </form>
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 pt-4">
+              <Link
+                href="/shop"
+                className="btn-gold text-[10px] font-bold py-4 px-8 rounded flex items-center justify-center gap-2 uppercase"
+              >
+                <span>EXPLORE SHOP</span>
+                <ArrowRight size={14} />
+              </Link>
+              <Link
+                href="/story"
+                className="border border-white/10 hover:border-white hover:bg-white/5 text-white text-[10px] tracking-[0.15em] font-bold py-4 px-8 rounded flex items-center justify-center gap-1.5 transition-all uppercase"
+              >
+                <span>OUR STORY</span>
+                <ArrowUpRight size={14} />
+              </Link>
+            </div>
           </div>
 
           {/* Hero Right Floating Cards */}
-          <div className="relative flex justify-center items-center h-[350px] sm:h-[450px]">
-            {/* Animated Glow Backdrops */}
-            <div className="absolute w-[300px] h-[300px] radial-glow opacity-80 animate-pulse"></div>
+          <div className="hidden lg:flex lg:col-span-5 justify-center items-center relative h-[500px]">
+            <div className="absolute w-[400px] h-[400px] radial-glow opacity-80 animate-pulse"></div>
 
-            {/* Large Cinematic Food Showcase */}
-            <div className="relative z-10 w-[260px] sm:w-[360px] h-[260px] sm:h-[360px] animate-float">
+            {/* Showcase Image */}
+            <div className="relative z-10 w-[350px] h-[470px] overflow-hidden border border-white/10 rounded-2xl shadow-2xl group">
               <img
-                src="https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&q=80&w=800"
-                alt="Karachi Biryani Feast"
-                className="w-full h-full object-cover rounded-full border-4 border-gold/30 shadow-2xl"
+                src="https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&q=80&w=800"
+                alt="THE VESTRA Tailoring Look"
+                className="w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700"
               />
-              {/* Float badge 1 */}
-              <div className="absolute top-4 -left-6 glass-premium p-3.5 rounded-2xl flex items-center gap-2 animate-float-delayed border border-gold/20">
-                <div className="text-2xl">🔥</div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"></div>
+              
+              {/* Product Label Badge */}
+              <div className="absolute bottom-6 left-6 right-6 p-4 glass rounded-xl flex items-center justify-between border border-white/10">
                 <div>
-                  <div className="text-[10px] text-text-muted">Top Pick</div>
-                  <div className="text-xs font-bold text-white">Shahi Biryani</div>
+                  <span className="text-[9px] text-text-muted tracking-widest block uppercase">Winter Minimalist</span>
+                  <span className="text-xs font-serif font-bold text-white tracking-wider uppercase mt-1 block">Cashmere Wool Trench</span>
                 </div>
-              </div>
-
-              {/* Float badge 2 */}
-              <div className="absolute bottom-4 -right-6 glass-premium p-3.5 rounded-2xl flex items-center gap-2 animate-float border border-primary/20">
-                <div className="text-2xl">👑</div>
-                <div>
-                  <div className="text-[10px] text-text-muted">Desi Ghee</div>
-                  <div className="text-xs font-bold text-white">Mutton Karahi</div>
-                </div>
+                <span className="text-xs font-bold text-primary font-sans">Rs. 18,500</span>
               </div>
             </div>
           </div>
@@ -214,175 +149,218 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 2. CATEGORIES SELECTOR */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative">
-        <div className="text-center space-y-2 mb-12">
-          <span className="text-xs tracking-widest text-gold uppercase font-bold">Categories</span>
-          <h2 className="text-3xl font-extrabold text-white">Browse By Feast Types</h2>
+      {/* 2. CAPSULE COLLECTIONS GRID */}
+      <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-24 relative border-t border-white/5">
+        <div className="text-center space-y-3 mb-16">
+          <span className="text-[10px] tracking-[0.3em] text-primary uppercase font-bold">Curated Portfolios</span>
+          <h2 className="text-3xl sm:text-4xl font-serif font-medium text-white uppercase tracking-wider">THE SEASON CAPSULES</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Fast Food Block */}
-          <Link href="/menu?category=fast-food" className="relative group overflow-hidden rounded-3xl h-64 border border-white/5 hover:border-primary/40 shadow-2xl transition-all">
-            <div className="absolute inset-0 bg-gradient-to-r from-black/90 to-transparent z-10"></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Collection 1 */}
+          <Link href="/shop?collection=winter-minimalist" className="relative group overflow-hidden rounded-2xl h-[450px] border border-white/5 hover:border-primary/20 transition-all flex flex-col justify-end">
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10"></div>
             <img
-              src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800"
-              alt="Fast Food category"
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              src="https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=800"
+              alt="Winter Minimalist"
+              className="absolute inset-0 w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700"
             />
-            <div className="absolute bottom-6 left-6 z-20 space-y-2">
-              <span className="text-[10px] bg-primary text-white font-bold px-3 py-1 rounded-full uppercase tracking-wider">Premium Selection</span>
-              <h3 className="text-2xl font-bold text-white tracking-wide">FAST FOOD</h3>
-              <p className="text-xs text-text-muted max-w-xs font-light">Royal Smash Burgers, Alfredo Pastas, Shawarmas, and Flaky Rolls.</p>
-              <div className="flex items-center gap-1 text-xs text-gold font-semibold pt-1">
-                <span>Browse Category</span>
-                <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+            <div className="absolute inset-0 bg-black/10 z-0"></div>
+            <div className="p-8 z-20 space-y-3">
+              <h3 className="text-lg font-serif font-bold text-white tracking-widest uppercase">Winter Minimalist</h3>
+              <p className="text-[11px] text-text-muted font-light leading-relaxed max-w-xs">Double-faced trench coats, structured wool layers, cashmere knits.</p>
+              <div className="flex items-center gap-1.5 text-[10px] text-primary font-bold tracking-widest uppercase pt-2">
+                <span>VIEW COLLECTION</span>
+                <ArrowRight size={11} className="group-hover:translate-x-1.5 transition-transform" />
               </div>
             </div>
           </Link>
 
-          {/* Desi Khany Block */}
-          <Link href="/menu?category=desi-khany" className="relative group overflow-hidden rounded-3xl h-64 border border-white/5 hover:border-gold/40 shadow-2xl transition-all">
-            <div className="absolute inset-0 bg-gradient-to-r from-black/90 to-transparent z-10"></div>
+          {/* Collection 2 */}
+          <Link href="/shop?collection=essential-loungewear" className="relative group overflow-hidden rounded-2xl h-[450px] border border-white/5 hover:border-primary/20 transition-all flex flex-col justify-end">
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10"></div>
             <img
-              src="https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&q=80&w=800"
-              alt="Desi Khany category"
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800"
+              alt="Essential Loungewear"
+              className="absolute inset-0 w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700"
             />
-            <div className="absolute bottom-6 left-6 z-20 space-y-2">
-              <span className="text-[10px] bg-gold text-background font-bold px-3 py-1 rounded-full uppercase tracking-wider">Royal Recipes</span>
-              <h3 className="text-2xl font-bold text-white tracking-wide font-urdu">روایتی دیسی کھانے</h3>
-              <p className="text-xs text-text-muted max-w-xs font-light">Aromatic Biryanis, Buttered Lentils, Shahi Haleems, and Wok Karahis.</p>
-              <div className="flex items-center gap-1 text-xs text-primary-light font-semibold pt-1">
-                <span>Browse Category</span>
-                <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+            <div className="absolute inset-0 bg-black/10 z-0"></div>
+            <div className="p-8 z-20 space-y-3">
+              <h3 className="text-lg font-serif font-bold text-white tracking-widest uppercase">Essential Loungewear</h3>
+              <p className="text-[11px] text-text-muted font-light leading-relaxed max-w-xs">Heavyweight loopback fleece, oversized comfort, structured sweats.</p>
+              <div className="flex items-center gap-1.5 text-[10px] text-primary font-bold tracking-widest uppercase pt-2">
+                <span>VIEW COLLECTION</span>
+                <ArrowRight size={11} className="group-hover:translate-x-1.5 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+          {/* Collection 3 */}
+          <Link href="/shop?collection=classic-tailoring" className="relative group overflow-hidden rounded-2xl h-[450px] border border-white/5 hover:border-primary/20 transition-all flex flex-col justify-end">
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10"></div>
+            <img
+              src="https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=800"
+              alt="Classic Tailoring"
+              className="absolute inset-0 w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-black/10 z-0"></div>
+            <div className="p-8 z-20 space-y-3">
+              <h3 className="text-lg font-serif font-bold text-white tracking-widest uppercase">Classic Tailoring</h3>
+              <p className="text-[11px] text-text-muted font-light leading-relaxed max-w-xs">Egyptian cotton shirting, high-gauge mercerized polos, tapered trousers.</p>
+              <div className="flex items-center gap-1.5 text-[10px] text-primary font-bold tracking-widest uppercase pt-2">
+                <span>VIEW COLLECTION</span>
+                <ArrowRight size={11} className="group-hover:translate-x-1.5 transition-transform" />
               </div>
             </div>
           </Link>
         </div>
       </section>
 
-      {/* 3. TODAY'S SPECIALS & RECOMMENDED GRID */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative">
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-12 gap-4">
-          <div className="text-center sm:text-left space-y-1">
-            <span className="text-xs tracking-widest text-primary font-bold uppercase">{t.todaysSpecials}</span>
-            <h2 className="text-3xl font-extrabold text-white">Chef's Signature Recommendations</h2>
+      {/* 3. NEW ARRIVALS & BEST SELLERS */}
+      <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-20 relative">
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-16 gap-6">
+          <div className="text-center sm:text-left space-y-2">
+            <span className="text-[10px] tracking-[0.3em] text-primary font-bold uppercase">EDITORIAL SPOTLIGHT</span>
+            <h2 className="text-3xl sm:text-4xl font-serif font-medium text-white uppercase tracking-wider">NEW ARRIVALS</h2>
           </div>
           <Link
-            href="/menu"
-            className="flex items-center gap-1 text-sm text-text-muted hover:text-white font-semibold transition-colors"
+            href="/shop"
+            className="flex items-center gap-2 text-xs tracking-widest text-text-muted hover:text-white font-bold uppercase transition-colors"
           >
-            <span>View Full Menu</span>
-            <ArrowRight size={15} />
+            <span>VIEW ALL PIECES</span>
+            <ArrowRight size={14} />
           </Link>
         </div>
 
-        {/* Specials Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredItems.map((item) => {
-            const finalPrice = item.price * (1 - item.discount / 100);
-            return (
-              <div key={item.id} className="glass rounded-2xl overflow-hidden flex flex-col border border-white/5 hover:border-primary/20 transition-all hover:shadow-2xl relative group">
-                
-                {/* Discount Badge */}
-                {item.discount > 0 && (
-                  <span className="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded z-10">
-                    SAVE {item.discount}%
-                  </span>
-                )}
-
-                {/* Card Top Image */}
-                <div className="h-48 overflow-hidden bg-surface relative">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                  <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-xs text-white">
-                    <span className="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm">
-                      <Star size={12} className="text-gold fill-current" />
-                      <span>{item.rating}</span>
-                    </span>
-                    <span className="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm">
-                      <Clock size={12} className="text-text-muted" />
-                      <span>{item.prepTime} mins</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Card Content details */}
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className={`text-[10px] uppercase font-bold tracking-widest ${item.spiceLevel === 'SPICY' ? 'text-primary' : 'text-text-muted'}`}>
-                        {item.spiceLevel}
-                      </span>
-                    </div>
-                    <h3 className="text-base font-bold text-white group-hover:text-primary transition-colors line-clamp-1">{item.name}</h3>
-                    <p className="text-xs text-text-muted line-clamp-2 leading-relaxed font-light">{item.description}</p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-5 border-t border-white/5 mt-4">
-                    <div>
-                      <div className="text-sm font-bold text-white">Rs. {Math.round(finalPrice)}</div>
-                      {item.discount > 0 && (
-                        <div className="text-[10px] text-text-muted line-through">Rs. {item.price}</div>
-                      )}
-                    </div>
-                    
-                    <button
-                      onClick={() => addToCart({ id: item.id, name: item.name, price: item.price, discount: item.discount, image: item.image, size: 'Regular' })}
-                      className="p-2 bg-primary hover:bg-primary-light rounded-lg text-white transition-all focus:outline-none"
-                    >
-                      <ShoppingCart size={15} />
-                    </button>
-                  </div>
-                </div>
-
+        {/* Dynamic Products Grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-4 animate-pulse">
+                <div className="h-[380px] bg-white/5 rounded-2xl"></div>
+                <div className="h-4 bg-white/10 w-2/3 rounded"></div>
+                <div className="h-3 bg-white/10 w-1/2 rounded"></div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {featuredProducts.map((product) => {
+              const finalPrice = product.price * (1 - product.discount / 100);
+              const mainImage = product.images?.[0]?.url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800';
+              const hoverImage = product.images?.[1]?.url || mainImage;
+              
+              return (
+                <div key={product.id} className="group flex flex-col justify-between hover-lift border border-white/5 p-4 rounded-2xl relative bg-secondaryBg">
+                  
+                  {/* Image Holder with hover swap */}
+                  <Link href={`/shop/${product.id}`} className="relative h-[380px] overflow-hidden rounded-xl bg-surface block">
+                    {product.discount > 0 && (
+                      <span className="absolute top-4 left-4 bg-primary text-black text-[9px] font-bold px-2 py-0.5 rounded tracking-widest uppercase z-10">
+                        -{product.discount}%
+                      </span>
+                    )}
+                    <img
+                      src={mainImage}
+                      alt={product.name}
+                      className="w-full h-full object-cover grayscale group-hover:hidden transition-all duration-700"
+                    />
+                    <img
+                      src={hoverImage}
+                      alt={product.name}
+                      className="w-full h-full object-cover grayscale hidden group-hover:block transition-all duration-700"
+                    />
+                    <div className="absolute inset-0 bg-black/10 z-0"></div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                      <div className="p-3 bg-black/80 rounded-full text-white border border-white/10">
+                        <Eye size={18} />
+                      </div>
+                    </div>
+                  </Link>
+
+                  {/* Product Details */}
+                  <div className="pt-6 space-y-2 flex-1 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[9px] text-primary tracking-[0.2em] font-semibold uppercase">{product.fit}</span>
+                      <Link href={`/shop/${product.id}`} className="block mt-1">
+                        <h3 className="text-xs font-bold text-white tracking-widest uppercase group-hover:text-primary transition-colors line-clamp-1">
+                          {product.name}
+                        </h3>
+                      </Link>
+                      <p className="text-[10px] text-text-muted font-light line-clamp-2 leading-relaxed mt-1">
+                        {product.description}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4 mt-3 border-t border-white/5">
+                      <div>
+                        <div className="text-xs font-bold text-white font-sans">Rs. {Math.round(finalPrice)}</div>
+                        {product.discount > 0 && (
+                          <div className="text-[9px] text-text-muted line-through font-sans">Rs. {product.price}</div>
+                        )}
+                      </div>
+                      
+                      <button
+                        onClick={() => addToCart({
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          discount: product.discount,
+                          image: mainImage,
+                          size: product.variants?.[0]?.size || 'M',
+                          color: product.variants?.[0]?.color || 'Black',
+                          quantity: 1
+                        })}
+                        className="p-2.5 bg-transparent border border-white/10 hover:border-primary text-text-muted hover:text-black hover:bg-primary rounded-lg transition-all"
+                      >
+                        <ShoppingBag size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
-      {/* 4. WHY CHOOSE ZIYAFAT */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-white/5">
+      {/* 4. THE EXPERIENCE / VALUES */}
+      <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-20 border-t border-white/5">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
-          <div className="glass p-8 rounded-3xl border border-white/5 hover:border-gold/20 flex gap-4 transition-all">
-            <div className="h-12 w-12 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center text-gold flex-shrink-0">
-              <ShieldCheck size={24} />
+          <div className="glass p-8 rounded-2xl border border-white/5 flex gap-5 hover:border-primary/20 transition-all">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+              <Sparkles size={18} />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-bold text-white">Michelin Standards</h3>
-              <p className="text-xs text-text-muted leading-relaxed font-light">
-                Our kitchen runs with ultra-high sanitization protocols. Every culinary master has years of expert traditional experience.
+              <h3 className="text-xs font-serif font-bold text-white uppercase tracking-wider">Premium Curation</h3>
+              <p className="text-[11px] text-text-muted leading-relaxed font-light">
+                Every garment undergoes strict quality inspection. Woven with two-ply Egyptian long-staple cotton and tailored with pristine fits.
               </p>
             </div>
           </div>
 
-          <div className="glass p-8 rounded-3xl border border-white/5 hover:border-primary/20 flex gap-4 transition-all">
-            <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary-light flex-shrink-0">
-              <Clock size={24} />
+          <div className="glass p-8 rounded-2xl border border-white/5 flex gap-5 hover:border-primary/20 transition-all">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+              <ShieldCheck size={18} />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-bold text-white">Express Delivery</h3>
-              <p className="text-xs text-text-muted leading-relaxed font-light">
-                Freshly cooked meals dispatched with dedicated riders to ensure delivery in North Nazimabad while the food is still piping hot.
+              <h3 className="text-xs font-serif font-bold text-white uppercase tracking-wider">Complimentary Concierge</h3>
+              <p className="text-[11px] text-text-muted leading-relaxed font-light">
+                Enjoy 30-day premium return and exchange options. Contact our dedicated support team via WhatsApp for personalized styling help.
               </p>
             </div>
           </div>
 
-          <div className="glass p-8 rounded-3xl border border-white/5 hover:border-gold/20 flex gap-4 transition-all">
-            <div className="h-12 w-12 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center text-gold flex-shrink-0">
-              <Gift size={24} />
+          <div className="glass p-8 rounded-2xl border border-white/5 flex gap-5 hover:border-primary/20 transition-all">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+              <ShoppingBag size={18} />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-bold text-white">Loyalty & Rewards</h3>
-              <p className="text-xs text-text-muted leading-relaxed font-light">
-                Earn feast reward points on every single order. Redeem points on checkouts for grand discounts and complimentary rolls.
+              <h3 className="text-xs font-serif font-bold text-white uppercase tracking-wider">Worldwide Logistics</h3>
+              <p className="text-[11px] text-text-muted leading-relaxed font-light">
+                Enjoy complimentary shipping inside Pakistan for orders over Rs. 5000. Securely boxed and tracked packages dispatched within 24 hours.
               </p>
             </div>
           </div>
@@ -390,56 +368,81 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5. TESTIMONIALS */}
-      <section className="max-w-4xl mx-auto px-4 py-16 text-center relative">
-        <span className="text-xs tracking-widest text-gold font-bold uppercase">{language === 'en' ? 'Gourmet Critiques' : 'تبصرے'}</span>
+      {/* 5. BRAND STORY BANNER */}
+      <section className="relative h-[480px] flex items-center justify-center px-6 text-center border-t border-b border-white/5 bg-secondaryBg">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center opacity-10 filter grayscale"></div>
+        <div className="max-w-2xl mx-auto space-y-6 relative z-10">
+          <span className="text-[9px] tracking-[0.35em] text-primary font-bold uppercase block">OUR PHILOSOPHY</span>
+          <h2 className="text-3xl font-serif font-medium text-white uppercase tracking-widest leading-relaxed">
+            THE ARCHITECTURE OF SILHOUETTE
+          </h2>
+          <p className="text-[11px] text-text-muted font-light leading-relaxed tracking-wide">
+            THE VESTRA was founded on a simple premise: menswear should be structured, timeless, and clean. By rejecting fleeting trends, we focus on material density, neckline geometry, and organic color palettes. We wear confidence.
+          </p>
+          <div className="pt-4">
+            <Link
+              href="/story"
+              className="inline-block border border-primary hover:bg-primary hover:text-black text-primary text-[9px] tracking-widest font-bold px-8 py-3.5 rounded transition-all uppercase"
+            >
+              READ OUR STORY
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. STYLE EDITORIAL CRITIQUES */}
+      <section className="max-w-4xl mx-auto px-6 py-24 text-center relative border-b border-white/5">
+        <span className="text-[10px] tracking-[0.25em] text-primary font-bold uppercase">EDITORIAL REVIEWS</span>
         
-        <div className="mt-6 relative h-48 flex items-center justify-center">
+        <div className="mt-8 relative h-40 flex items-center justify-center">
           <div className="space-y-4">
-            <p className="text-base sm:text-xl italic text-white leading-relaxed max-w-2xl font-light">
-              "{reviews[activeReviewIndex].comment}"
+            <p className="text-sm sm:text-base italic text-white leading-relaxed max-w-2xl font-serif font-light">
+              "{stylingReviews[activeReviewIndex].comment}"
             </p>
-            <div>
-              <div className="text-sm font-bold text-primary-light">{reviews[activeReviewIndex].name}</div>
-              <div className="text-xs text-text-muted">{reviews[activeReviewIndex].area}</div>
+            <div className="pt-2">
+              <div className="text-[10px] tracking-widest font-bold text-white uppercase">{stylingReviews[activeReviewIndex].name}</div>
+              <div className="text-[9px] tracking-wider text-text-muted uppercase mt-0.5">{stylingReviews[activeReviewIndex].area}</div>
             </div>
           </div>
         </div>
 
         {/* Dots slider indicators */}
-        <div className="flex justify-center space-x-2.5 mt-4">
-          {reviews.map((_, idx) => (
+        <div className="flex justify-center space-x-2.5 mt-6">
+          {stylingReviews.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setActiveReviewIndex(idx)}
-              className={`h-2 w-2 rounded-full transition-all ${
-                activeReviewIndex === idx ? 'bg-primary w-5' : 'bg-white/20'
+              className={`h-1.5 rounded-full transition-all ${
+                activeReviewIndex === idx ? 'bg-primary w-6' : 'bg-white/20 w-1.5'
               }`}
             />
           ))}
         </div>
       </section>
 
-      {/* 6. CALL TO ACTION NEWSLETTER */}
-      <section className="max-w-5xl mx-auto px-4 py-12">
-        <div className="glass-premium p-8 sm:p-12 rounded-[2rem] border border-primary/20 text-center space-y-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 radial-glow pointer-events-none opacity-50"></div>
-          
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white">Join the Ziyafat Feast Circle</h2>
-          <p className="text-xs sm:text-sm text-text-muted max-w-md mx-auto font-light leading-relaxed">
-            Subscribe to receive updates about secret dishes, weekly discounts, and grand chef specials exclusively in Karachi.
-          </p>
-
-          <div className="max-w-md mx-auto flex flex-col sm:flex-row gap-3 pt-2">
-            <input
-              type="email"
-              placeholder="Your email address"
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary placeholder:text-text-muted"
-            />
-            <button className="bg-primary hover:bg-primary-light text-white text-xs font-bold px-6 py-3 rounded-xl transition-colors">
-              Subscribe
-            </button>
-          </div>
+      {/* 7. INSTAGRAM EDITORIAL BANNER */}
+      <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-20 text-center space-y-12">
+        <div className="space-y-2">
+          <span className="text-[10px] tracking-[0.3em] text-primary font-bold uppercase">DIGITAL DIARY</span>
+          <h2 className="text-2xl font-serif text-white uppercase tracking-wider">INSTAGRAM EDITORIAL</h2>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=400',
+            'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=400',
+            'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&q=80&w=400',
+            'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=400'
+          ].map((url, idx) => (
+            <div key={idx} className="relative h-64 md:h-80 overflow-hidden rounded-xl border border-white/5 group">
+              <img
+                src={url}
+                alt="Instagram Look"
+                className="w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-black/20 opacity-100 group-hover:opacity-0 transition-opacity"></div>
+            </div>
+          ))}
         </div>
       </section>
 

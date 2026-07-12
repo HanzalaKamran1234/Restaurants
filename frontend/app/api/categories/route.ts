@@ -7,7 +7,7 @@ export async function GET() {
     const categories = await prisma.category.findMany({
       include: {
         _count: {
-          select: { menuItems: true },
+          select: { products: true },
         },
       },
     });
@@ -19,7 +19,7 @@ export async function GET() {
       slug: cat.slug,
       image: cat.image,
       _count: {
-        items: cat._count.menuItems,
+        items: cat._count.products,
       },
     }));
 

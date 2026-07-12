@@ -7,7 +7,9 @@ export const getDashboardAnalytics = async (req: AuthRequest, res: Response) => 
     // 1. Core Order Counts
     const totalOrdersCount = await prisma.order.count();
     const pendingOrdersCount = await prisma.order.count({ where: { status: 'PENDING' } });
-    const preparingOrdersCount = await prisma.order.count({ where: { status: 'PREPARING' } });
+    const preparingOrdersCount = await prisma.order.count({
+      where: { status: { in: ['PROCESSING', 'SHIPPED'] } }
+    });
     const completedOrdersCount = await prisma.order.count({ where: { status: 'DELIVERED' } });
     const cancelledOrdersCount = await prisma.order.count({ where: { status: 'CANCELLED' } });
 
@@ -40,16 +42,16 @@ export const getDashboardAnalytics = async (req: AuthRequest, res: Response) => 
     });
 
     // 3. Customer analysis
-    const customerCount = await prisma.user.count({ where: { role: 'CUSTOMER' } });
+    const customerCount = await prisma.profile.count({ where: { role: 'customer' } });
 
-    // Returning Customers (Users with > 1 order)
+    // Returning Customers (Profiles with > 1 order)
     const userOrderCounts = await prisma.order.groupBy({
-      by: ['userId'],
+      by: ['profileId'],
       _count: {
         id: true,
       },
       where: {
-        userId: { not: null },
+        profileId: { not: null },
       },
     });
     const returningCustomers = userOrderCounts.filter(u => u._count.id > 1).length;
@@ -62,29 +64,32 @@ export const getDashboardAnalytics = async (req: AuthRequest, res: Response) => 
       orderBy: { createdAt: 'desc' },
       include: {
         items: {
-          include: { menuItem: true },
-        },
-        area: true
+          include: {
+            product: { include: { images: true } }
+          },
+        }
       },
     });
 
     // 5. Best selling items
     const orderItems = await prisma.orderItem.findMany({
-      include: { menuItem: true },
+      include: {
+        product: { include: { images: true } }
+      },
     });
 
     const itemCounts: { [key: string]: { name: string; quantity: number; image: string; price: number } } = {};
     for (const oi of orderItems) {
-      if (oi.menuItem) {
-        if (!itemCounts[oi.menuItemId]) {
-          itemCounts[oi.menuItemId] = {
-            name: oi.menuItem.name,
+      if (oi.product) {
+        if (!itemCounts[oi.productId]) {
+          itemCounts[oi.productId] = {
+            name: oi.product.name,
             quantity: 0,
-            image: oi.menuItem.image,
+            image: oi.product.images?.[0]?.url || '',
             price: oi.price
           };
         }
-        itemCounts[oi.menuItemId].quantity += oi.quantity;
+        itemCounts[oi.productId].quantity += oi.quantity;
       }
     }
 

@@ -1,79 +1,79 @@
 "use client";
 
 import React from 'react';
-import { MapPin, Clock, ShieldCheck } from 'lucide-react';
+import { MapPin, Clock, ShieldCheck, Box } from 'lucide-react';
 
-export default function DeliveryAreas() {
+export default function ShippingLogistics() {
   const regions = [
     {
-      name: "North Nazimabad",
-      blocks: "Blocks A, B, C, D, E, F, G, H, I, J, K, L, M, N, R, T",
-      time: "20 - 30 Mins",
-      charge: "Rs. 150 (Free over Rs. 1500)",
-      minOrder: "Rs. 300"
+      name: "Karachi Metro",
+      blocks: "All residential and commercial zones",
+      time: "24 - 48 Hours",
+      charge: "Rs. 200 (Free over Rs. 5000)",
+      minOrder: "No minimum spend"
     },
     {
-      name: "Gulshan-e-Iqbal",
-      blocks: "Blocks 1 to 14, University Road, Civic Center vicinity",
-      time: "35 - 45 Mins",
-      charge: "Rs. 250 (Free over Rs. 2500)",
-      minOrder: "Rs. 1000"
+      name: "Punjab & Islamabad",
+      blocks: "Lahore, Islamabad, Rawalpindi, Faisalabad, Multan, etc.",
+      time: "2 - 3 Business Days",
+      charge: "Rs. 200 (Free over Rs. 5000)",
+      minOrder: "No minimum spend"
     },
     {
-      name: "Clifton & DHA",
-      blocks: "DHA Phases 1-8, Clifton Blocks 1-9",
-      time: "45 - 60 Mins",
-      charge: "Rs. 350 (Free over Rs. 4000)",
-      minOrder: "Rs. 1500"
+      name: "Sindh (Interior) & KPK",
+      blocks: "Peshawar, Abbottabad, Hyderabad, Sukkur, Larkana, etc.",
+      time: "3 - 4 Business Days",
+      charge: "Rs. 200 (Free over Rs. 5000)",
+      minOrder: "No minimum spend"
     },
     {
-      name: "Federal B Area & Gulberg",
-      blocks: "Water Pump, Ancholi, Gulberg Block 1-13",
-      time: "30 - 40 Mins",
-      charge: "Rs. 180 (Free over Rs. 2000)",
-      minOrder: "Rs. 500"
+      name: "Balochistan & Gilgit",
+      blocks: "Quetta, Gwadar, Gilgit, Skardu, Hunza, etc.",
+      time: "4 - 5 Business Days",
+      charge: "Rs. 200 (Free over Rs. 5000)",
+      minOrder: "No minimum spend"
     }
   ];
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-16 font-sans relative z-10 space-y-12">
+    <div className="max-w-5xl mx-auto px-6 py-16 font-sans relative z-10 space-y-12">
       
       <div className="text-center space-y-2 max-w-xl mx-auto">
-        <span className="text-xs tracking-widest text-gold font-bold uppercase">Coverage Map</span>
-        <h1 className="text-3xl sm:text-5xl font-black text-white">Karachi Delivery Zones</h1>
+        <span className="text-xs tracking-[0.25em] text-primary font-bold uppercase block">Logistics Network</span>
+        <h1 className="text-2xl sm:text-4xl font-serif tracking-widest text-white uppercase">Shipping & Destinations</h1>
         <p className="text-xs sm:text-sm text-text-muted leading-relaxed font-light">
-          Dispatched from our primary culinary hub on Sher Shah Suri Rd to ensure optimal freshness.
+          Dispatched from our primary fulfillment studio in Karachi via secure premium courier service.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {regions.map((r, idx) => (
-          <div key={idx} className="glass p-6 rounded-2xl border border-white/5 space-y-4 hover:border-primary/20 transition-all">
+          <div key={idx} className="glass p-6 rounded border border-white/5 space-y-4 hover:border-primary/20 transition-all text-xs font-light">
             <div className="flex justify-between items-start gap-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <MapPin size={18} className="text-primary-light" />
+              <h3 className="text-sm font-serif font-bold text-white flex items-center gap-2 uppercase tracking-wider">
+                <MapPin size={14} className="text-primary" />
                 <span>{r.name}</span>
               </h3>
-              <span className="text-[10px] bg-primary/10 border border-primary/20 text-primary-light font-bold px-2 py-0.5 rounded">
-                Active Zone
+              <span className="text-[9px] bg-primary/10 border border-primary/20 text-primary font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+                Active Region
               </span>
             </div>
 
-            <p className="text-xs text-text-muted leading-relaxed font-light">
-              <strong>Sectors Covered:</strong> {r.blocks}
+            <p className="text-text-muted leading-relaxed">
+              <strong>Coverage:</strong> {r.blocks}
             </p>
 
-            <div className="grid grid-cols-3 gap-2.5 text-[11px] pt-2 border-t border-white/5">
+            <div className="grid grid-cols-3 gap-2.5 text-[10px] pt-3 border-t border-white/5 font-semibold tracking-wider">
               <div>
-                <span className="text-text-muted block uppercase text-[9px] font-bold">Delivery Time</span>
+                <span className="text-text-muted block uppercase text-[8px] font-bold tracking-wide">Transit Time</span>
                 <span className="text-white font-medium">{r.time}</span>
               </div>
               <div>
-                <span className="text-text-muted block uppercase text-[9px] font-bold">Delivery Fare</span>
+                <span className="text-text-muted block uppercase text-[8px] font-bold tracking-wide">Courier Fare</span>
                 <span className="text-white font-medium">{r.charge}</span>
               </div>
               <div>
-                <span className="text-text-muted block uppercase text-[9px] font-bold">Min Order</span>
+                <span className="text-text-muted block uppercase text-[8px] font-bold tracking-wide">Min Order</span>
                 <span className="text-white font-medium">{r.minOrder}</span>
               </div>
             </div>
@@ -81,22 +81,22 @@ export default function DeliveryAreas() {
         ))}
       </div>
 
-      {/* Freshness banner */}
-      <div className="glass-premium p-8 rounded-3xl border border-primary/20 text-center flex flex-col sm:flex-row items-center justify-between gap-6">
+      {/* Packaging protection banner */}
+      <div className="glass-premium p-8 rounded border border-primary/20 text-center flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-4 text-left">
-          <div className="h-12 w-12 rounded-2xl bg-gold/10 text-gold flex items-center justify-center flex-shrink-0">
-            <ShieldCheck size={24} />
+          <div className="h-12 w-12 rounded bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+            <Box size={20} />
           </div>
           <div>
-            <h4 className="text-base font-bold text-white">Insulated Hot Bag Deliveries</h4>
-            <p className="text-xs text-text-muted font-light max-w-sm mt-0.5">
-              Our riders use professional thermal heating bags to lock in heat and steam during transit across Karachi.
+            <h4 className="text-xs font-serif font-bold text-white uppercase tracking-widest">Premium Fabric Care Handling</h4>
+            <p className="text-[11px] text-text-muted font-light max-w-sm mt-1 leading-relaxed">
+              Garments are pre-inspected and shipped in rigid matte black storage boxes with protective cotton dust bags.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs font-bold text-white bg-white/5 border border-white/10 px-4 py-2.5 rounded-xl">
-          <Clock size={14} className="text-gold" />
-          <span>Hot & Fresh Guarantee</span>
+        <div className="flex items-center gap-2 text-[9px] font-bold tracking-widest text-white bg-white/5 border border-white/10 px-4 py-2.5 rounded uppercase">
+          <Clock size={12} className="text-primary" />
+          <span>Fulfillment Guarantee</span>
         </div>
       </div>
 

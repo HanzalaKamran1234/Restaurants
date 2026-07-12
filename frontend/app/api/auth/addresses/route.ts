@@ -11,7 +11,6 @@ export async function GET() {
 
     const addresses = await prisma.address.findMany({
       where: { profileId: userId },
-      include: { area: true },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -29,13 +28,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const { title, areaId, landmark, fullAddress } = await req.json();
+    const { title, fullAddress, city, province, postalCode, phone } = await req.json();
 
-    if (!title || !areaId || !fullAddress) {
-      return NextResponse.json({ message: 'Title, areaId, and fullAddress are required' }, { status: 400 });
+    if (!title || !fullAddress || !city || !province) {
+      return NextResponse.json({ message: 'Title, fullAddress, city, and province are required' }, { status: 400 });
     }
 
-    // Set any previous default addresses to false if this one is default (or first)
     const existingCount = await prisma.address.count({ where: { profileId: userId } });
     const isDefault = existingCount === 0;
 
@@ -43,12 +41,13 @@ export async function POST(req: Request) {
       data: {
         profileId: userId,
         title,
-        areaId,
-        landmark,
         fullAddress,
+        city,
+        province,
+        postalCode: postalCode || '74600',
+        phone: phone || null,
         isDefault,
-      },
-      include: { area: true },
+      }
     });
 
     return NextResponse.json(newAddress, { status: 201 });

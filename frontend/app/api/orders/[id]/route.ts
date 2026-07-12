@@ -12,9 +12,11 @@ export async function GET(
       where: { id },
       include: {
         items: {
-          include: { menuItem: true },
+          include: {
+            product: { include: { images: true } },
+            variant: true
+          },
         },
-        area: true,
       },
     });
 

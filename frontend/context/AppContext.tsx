@@ -11,24 +11,18 @@ export interface CartItem {
   quantity: number;
   image: string;
   size: string;
-}
-
-export interface DeliveryArea {
-  id: string;
-  name: string;
-  deliveryCharge: number;
-  estimatedTime: string;
-  minOrderAmount: number;
-  available: boolean;
+  color: string;
 }
 
 export interface CustomerAddress {
   id: string;
   title: string;
-  landmark?: string;
-  areaId: string;
-  area: DeliveryArea;
   fullAddress: string;
+  city: string;
+  province: string;
+  postalCode?: string;
+  phone?: string;
+  isDefault: boolean;
 }
 
 export interface User {
@@ -45,9 +39,9 @@ export interface User {
 
 interface AppContextType {
   cart: CartItem[];
-  addToCart: (item: Omit<CartItem, 'quantity'>, customQuantity?: number) => void;
-  removeFromCart: (id: string, size: string) => void;
-  updateQuantity: (id: string, size: string, quantity: number) => void;
+  addToCart: (item: CartItem, customQuantity?: number) => void;
+  removeFromCart: (id: string, size: string, color: string) => void;
+  updateQuantity: (id: string, size: string, color: string, quantity: number) => void;
   clearCart: () => void;
   user: User | null;
   token: string | null;
@@ -60,16 +54,12 @@ interface AppContextType {
   
   // Address Management
   addresses: CustomerAddress[];
-  addAddress: (title: string, areaId: string, landmark: string, fullAddress: string) => Promise<boolean>;
+  addAddress: (title: string, fullAddress: string, city: string, province: string, postalCode: string, phone: string) => Promise<boolean>;
   deleteAddress: (id: string) => Promise<boolean>;
   
   // Favorites
   favorites: any[];
   toggleFavorite: (itemId: string) => Promise<void>;
-  
-  // Delivery Areas
-  deliveryAreas: DeliveryArea[];
-  loadDeliveryAreas: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -86,43 +76,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // address & favorite states
+  // Address & favorite states
   const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
   const [favorites, setFavorites] = useState<any[]>([]);
-  const [deliveryAreas, setDeliveryAreas] = useState<DeliveryArea[]>([]);
 
   // Load from localStorage on mount
   useEffect(() => {
     setIsMounted(true);
-    const savedCart = localStorage.getItem('ziyafat_cart');
-
-    if (savedCart) setCart(JSON.parse(savedCart));
-
-    loadDeliveryAreas();
-  }, []);
-
-  // Fetch Delivery Areas from database
-  const loadDeliveryAreas = async () => {
-    try {
-      const res = await fetch('/api/extra/delivery-areas');
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setDeliveryAreas(data);
+    const savedCart = localStorage.getItem('vestra_cart');
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (e) {
+        setCart([]);
       }
-    } catch (err) {
-      console.log('Failed to fetch delivery areas, using fallback');
-      setDeliveryAreas([
-        {
-          id: 'area-north',
-          name: 'North Nazimabad',
-          deliveryCharge: 150,
-          estimatedTime: '30 Mins',
-          minOrderAmount: 300,
-          available: true
-        }
-      ]);
     }
-  };
+  }, []);
 
   // Sync profile details if Clerk reports signed-in status
   useEffect(() => {
@@ -139,7 +108,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             if (data.user) {
               setUser(data.user);
               if (data.user.addresses) setAddresses(data.user.addresses);
-              if (data.user.favoriteItems) setFavorites(data.user.favoriteItems);
+              if (data.user.favorites) setFavorites(data.user.favorites);
             }
           }
         } catch (err) {
@@ -159,31 +128,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Save cart to localStorage
   useEffect(() => {
     if (isMounted) {
-      localStorage.setItem('ziyafat_cart', JSON.stringify(cart));
+      localStorage.setItem('vestra_cart', JSON.stringify(cart));
     }
   }, [cart, isMounted]);
 
-  const addToCart = (item: Omit<CartItem, 'quantity'>, customQuantity: number = 1) => {
+  const addToCart = (item: CartItem, customQuantity: number = 1) => {
     setCart((prev) => {
-      const existing = prev.find((i) => i.id === item.id && i.size === item.size);
+      const existing = prev.find((i) => i.id === item.id && i.size === item.size && i.color === item.color);
       if (existing) {
-        return prev.map((i) => (i.id === item.id && i.size === item.size ? { ...i, quantity: i.quantity + customQuantity } : i));
+        return prev.map((i) => (i.id === item.id && i.size === item.size && i.color === item.color ? { ...i, quantity: i.quantity + customQuantity } : i));
       }
       return [...prev, { ...item, quantity: customQuantity }];
     });
     setIsCartOpen(true);
   };
 
-  const removeFromCart = (id: string, size: string) => {
-    setCart((prev) => prev.filter((item) => !(item.id === id && item.size === size)));
+  const removeFromCart = (id: string, size: string, color: string) => {
+    setCart((prev) => prev.filter((item) => !(item.id === id && item.size === size && item.color === color)));
   };
 
-  const updateQuantity = (id: string, size: string, quantity: number) => {
+  const updateQuantity = (id: string, size: string, color: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(id, size);
+      removeFromCart(id, size, color);
       return;
     }
-    setCart((prev) => prev.map((item) => (item.id === id && item.size === size ? { ...item, quantity } : item)));
+    setCart((prev) => prev.map((item) => (item.id === id && item.size === size && item.color === color ? { ...item, quantity } : item)));
   };
 
   const clearCart = () => {
@@ -191,7 +160,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const loginUser = () => {
-    // Redirect to Clerk sign in wrap
     window.location.href = '/login';
   };
 
@@ -205,14 +173,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Saved Addresses Operations
-  const addAddress = async (title: string, areaId: string, landmark: string, fullAddress: string): Promise<boolean> => {
+  const addAddress = async (title: string, fullAddress: string, city: string, province: string, postalCode: string, phone: string): Promise<boolean> => {
     try {
       const res = await fetch('/api/auth/addresses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ title, areaId, landmark, fullAddress })
+        body: JSON.stringify({ title, fullAddress, city, province, postalCode, phone })
       });
       if (res.ok) {
         // Refresh profile details to load updated addresses
@@ -256,8 +224,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const profileRes = await fetch('/api/auth/profile');
         if (profileRes.ok) {
           const profileData = await profileRes.json();
-          if (profileData.user?.favoriteItems) {
-            setFavorites(profileData.user.favoriteItems);
+          if (profileData.user?.favorites) {
+            setFavorites(profileData.user.favorites);
           }
         }
       }
@@ -267,7 +235,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleLanguage = (lang: 'en' | 'ur') => {
-    // Enforce English only, no-op
+    // English only, no-op
   };
 
   return (
@@ -290,9 +258,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addAddress,
         deleteAddress,
         favorites,
-        toggleFavorite,
-        deliveryAreas,
-        loadDeliveryAreas
+        toggleFavorite
       }}
     >
       {children}

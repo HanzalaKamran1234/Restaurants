@@ -6,7 +6,7 @@ import { AuthRequest } from '../middlewares/authMiddleware';
 export const getCategories = async (req: Request, res: Response) => {
   try {
     const categories = await prisma.category.findMany({
-      include: { _count: { select: { items: true } } },
+      include: { _count: { select: { products: true } } },
     });
     return res.json(categories);
   } catch (error: any) {
@@ -30,27 +30,43 @@ export const createCategory = async (req: Request, res: Response) => {
   }
 };
 
-// Menu Items
+// Products (replacing Menu Items)
 export const getMenuItems = async (req: Request, res: Response) => {
-  const { category, search, spiceLevel, minPrice, maxPrice, sort } = req.query;
+  const { category, collection, search, size, color, minPrice, maxPrice, sort } = req.query;
 
   try {
-    const whereClause: any = {};
+    const whereClause: any = { available: true };
 
     if (category) {
       whereClause.category = { slug: String(category) };
+    }
+
+    if (collection) {
+      whereClause.collection = { slug: String(collection) };
     }
 
     if (search) {
       whereClause.OR = [
         { name: { contains: String(search) } },
         { description: { contains: String(search) } },
-        { ingredients: { contains: String(search) } },
+        { fabric: { contains: String(search) } },
       ];
     }
 
-    if (spiceLevel) {
-      whereClause.spiceLevel = String(spiceLevel).toUpperCase();
+    if (size) {
+      whereClause.variants = {
+        some: { size: String(size) }
+      };
+    }
+
+    if (color) {
+      if (whereClause.variants) {
+        whereClause.variants.some.color = String(color);
+      } else {
+        whereClause.variants = {
+          some: { color: String(color) }
+        };
+      }
     }
 
     if (minPrice || maxPrice) {
@@ -66,15 +82,20 @@ export const getMenuItems = async (req: Request, res: Response) => {
       else if (sort === 'rating') orderBy = { rating: 'desc' };
     }
 
-    const items = await prisma.menuItem.findMany({
+    const items = await prisma.product.findMany({
       where: whereClause,
-      include: { category: true },
+      include: {
+        category: true,
+        collection: true,
+        images: true,
+        variants: true,
+      },
       orderBy,
     });
 
     return res.json(items);
   } catch (error: any) {
-    return res.status(500).json({ message: 'Error retrieving menu items', error: error.message });
+    return res.status(500).json({ message: 'Error retrieving products', error: error.message });
   }
 };
 
@@ -82,24 +103,27 @@ export const getMenuItemById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const item = await prisma.menuItem.findUnique({
+    const item = await prisma.product.findUnique({
       where: { id },
       include: {
         category: true,
+        collection: true,
+        images: true,
+        variants: true,
         reviews: {
-          include: { user: { select: { name: true } } },
+          include: { profile: { select: { fullName: true } } },
           orderBy: { createdAt: 'desc' },
         },
       },
     });
 
     if (!item) {
-      return res.status(404).json({ message: 'Menu item not found' });
+      return res.status(404).json({ message: 'Product not found' });
     }
 
     return res.json(item);
   } catch (error: any) {
-    return res.status(500).json({ message: 'Error retrieving menu item', error: error.message });
+    return res.status(500).json({ message: 'Error retrieving product details', error: error.message });
   }
 };
 
@@ -107,46 +131,77 @@ export const createMenuItem = async (req: Request, res: Response) => {
   const {
     name,
     description,
-    ingredients,
-    calories,
-    spiceLevel,
-    servingSize,
     price,
     discount,
-    available,
-    prepTime,
-    image,
-    sizes,
+    fabric,
+    fit,
+    shippingInfo,
+    returnsInfo,
     categoryId,
+    collectionId,
+    image, // Primary image url
+    gallery, // Array of extra image URLs
+    variants, // Array of { color, size, inventory }
   } = req.body;
 
   if (!name || !price || !categoryId || !image) {
-    return res.status(400).json({ message: 'Name, price, categoryId, and image are required' });
+    return res.status(400).json({ message: 'Name, price, categoryId, and primary image are required' });
   }
 
   try {
-    const serializedSizes = typeof sizes === 'object' ? JSON.stringify(sizes) : (sizes || '[]');
+    const product = await prisma.$transaction(async (tx) => {
+      const prod = await tx.product.create({
+        data: {
+          name,
+          description: description || '',
+          price: parseFloat(price),
+          discount: discount ? parseFloat(discount) : 0,
+          fabric: fabric || '100% Cotton',
+          fit: fit || 'Relaxed Fit',
+          shippingInfo: shippingInfo || undefined,
+          returnsInfo: returnsInfo || undefined,
+          categoryId,
+          collectionId: collectionId || null,
+        }
+      });
 
-    const item = await prisma.menuItem.create({
-      data: {
-        name,
-        description: description || '',
-        ingredients: ingredients || '',
-        calories: calories ? parseInt(calories) : null,
-        spiceLevel: spiceLevel || 'NONE',
-        servingSize: servingSize || '1 Person',
-        price: parseFloat(price),
-        discount: discount ? parseFloat(discount) : 0,
-        available: available !== undefined ? Boolean(available) : true,
-        prepTime: prepTime ? parseInt(prepTime) : 15,
-        image,
-        sizes: serializedSizes,
-        categoryId,
-      },
+      // Save primary image
+      await tx.productImage.create({
+        data: { url: image, productId: prod.id }
+      });
+
+      // Save gallery images
+      if (Array.isArray(gallery)) {
+        for (const url of gallery) {
+          if (url) {
+            await tx.productImage.create({ data: { url, productId: prod.id } });
+          }
+        }
+      }
+
+      // Save variants
+      if (Array.isArray(variants)) {
+        for (const v of variants) {
+          if (v.color && v.size) {
+            await tx.productVariant.create({
+              data: {
+                productId: prod.id,
+                color: v.color,
+                size: v.size,
+                inventory: parseInt(v.inventory) || 0,
+                sku: `${name.substring(0, 3).toUpperCase()}-${v.color.substring(0, 2).toUpperCase()}-${v.size}-${prod.id.substring(0, 4).toUpperCase()}`
+              }
+            });
+          }
+        }
+      }
+
+      return prod;
     });
-    return res.status(201).json(item);
+
+    return res.status(201).json(product);
   } catch (error: any) {
-    return res.status(500).json({ message: 'Error creating menu item', error: error.message });
+    return res.status(500).json({ message: 'Error creating product', error: error.message });
   }
 };
 
@@ -155,24 +210,50 @@ export const updateMenuItem = async (req: Request, res: Response) => {
   const data = req.body;
 
   try {
-    // Parse numeric fields if they are sent in request body
     if (data.price !== undefined) data.price = parseFloat(data.price);
     if (data.discount !== undefined) data.discount = parseFloat(data.discount);
-    if (data.calories !== undefined) data.calories = data.calories ? parseInt(data.calories) : null;
-    if (data.prepTime !== undefined) data.prepTime = parseInt(data.prepTime);
     if (data.available !== undefined) data.available = Boolean(data.available);
 
-    if (data.sizes !== undefined) {
-      data.sizes = typeof data.sizes === 'object' ? JSON.stringify(data.sizes) : data.sizes;
-    }
+    const updated = await prisma.$transaction(async (tx) => {
+      const { variants, images, category, collection, ...directFields } = data;
 
-    const item = await prisma.menuItem.update({
-      where: { id },
-      data,
+      const prod = await tx.product.update({
+        where: { id },
+        data: directFields,
+      });
+
+      if (Array.isArray(variants)) {
+        await tx.productVariant.deleteMany({ where: { productId: id } });
+        for (const v of variants) {
+          if (v.color && v.size) {
+            await tx.productVariant.create({
+              data: {
+                productId: id,
+                color: v.color,
+                size: v.size,
+                inventory: parseInt(v.inventory) || 0,
+                sku: `${prod.name.substring(0, 3).toUpperCase()}-${v.color.substring(0, 2).toUpperCase()}-${v.size}-${prod.id.substring(0, 4).toUpperCase()}`
+              }
+            });
+          }
+        }
+      }
+
+      if (Array.isArray(images)) {
+        await tx.productImage.deleteMany({ where: { productId: id } });
+        for (const img of images) {
+          if (img.url) {
+            await tx.productImage.create({ data: { url: img.url, productId: id } });
+          }
+        }
+      }
+
+      return prod;
     });
-    return res.json(item);
+
+    return res.json(updated);
   } catch (error: any) {
-    return res.status(500).json({ message: 'Error updating menu item', error: error.message });
+    return res.status(500).json({ message: 'Error updating product', error: error.message });
   }
 };
 
@@ -180,23 +261,23 @@ export const deleteMenuItem = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    await prisma.menuItem.delete({ where: { id } });
-    return res.json({ message: 'Menu item deleted successfully' });
+    await prisma.product.delete({ where: { id } });
+    return res.json({ message: 'Product deleted successfully' });
   } catch (error: any) {
-    return res.status(500).json({ message: 'Error deleting menu item', error: error.message });
+    return res.status(500).json({ message: 'Error deleting product', error: error.message });
   }
 };
 
 // Reviews
 export const addReview = async (req: AuthRequest, res: Response) => {
-  const { menuItemId, rating, comment } = req.body;
+  const { productId, rating, comment } = req.body;
 
   if (!req.user) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  if (!menuItemId || !rating || !comment) {
-    return res.status(400).json({ message: 'menuItemId, rating, and comment are required' });
+  if (!productId || !rating || !comment) {
+    return res.status(400).json({ message: 'productId, rating, and comment are required' });
   }
 
   try {
@@ -204,17 +285,17 @@ export const addReview = async (req: AuthRequest, res: Response) => {
       data: {
         rating: parseInt(rating),
         comment,
-        userId: req.user.id,
-        menuItemId,
+        profileId: req.user.id,
+        productId,
       },
     });
 
     // Update Average Rating
-    const reviews = await prisma.review.findMany({ where: { menuItemId } });
+    const reviews = await prisma.review.findMany({ where: { productId } });
     const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
 
-    await prisma.menuItem.update({
-      where: { id: menuItemId },
+    await prisma.product.update({
+      where: { id: productId },
       data: { rating: parseFloat(avgRating.toFixed(1)) },
     });
 

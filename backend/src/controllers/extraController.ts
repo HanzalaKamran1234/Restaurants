@@ -2,33 +2,71 @@ import { Request, Response } from 'express';
 import { prisma } from '../config/db';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
-// 1. Delivery Area Operations
-export const getDeliveryAreas = async (req: Request, res: Response) => {
+// 1. Collection Operations (Replacing Delivery Area Operations)
+export const getCollections = async (req: Request, res: Response) => {
   try {
-    const areas = await prisma.deliveryArea.findMany();
-    return res.json(areas);
+    const list = await prisma.collection.findMany({
+      include: {
+        _count: { select: { products: true } }
+      },
+      orderBy: { name: 'asc' }
+    });
+    return res.json(list);
   } catch (error: any) {
-    return res.status(500).json({ message: 'Error fetching delivery areas', error: error.message });
+    return res.status(500).json({ message: 'Error fetching collections', error: error.message });
   }
 };
 
-export const updateDeliveryArea = async (req: AuthRequest, res: Response) => {
-  const { id } = req.params;
-  const { deliveryCharge, estimatedTime, minOrderAmount, available } = req.body;
+export const createCollection = async (req: AuthRequest, res: Response) => {
+  const { name, slug, description, image } = req.body;
+  if (!name || !slug) {
+    return res.status(400).json({ message: 'Name and slug are required' });
+  }
 
   try {
-    const updated = await prisma.deliveryArea.update({
-      where: { id },
+    const collection = await prisma.collection.create({
       data: {
-        deliveryCharge: deliveryCharge !== undefined ? parseFloat(deliveryCharge) : undefined,
-        estimatedTime: estimatedTime || undefined,
-        minOrderAmount: minOrderAmount !== undefined ? parseFloat(minOrderAmount) : undefined,
-        available: available !== undefined ? Boolean(available) : undefined
+        name,
+        slug,
+        description: description || '',
+        image: image || ''
       }
     });
-    return res.json({ message: 'Delivery area updated successfully', area: updated });
+    return res.status(201).json(collection);
   } catch (error: any) {
-    return res.status(500).json({ message: 'Error updating delivery area', error: error.message });
+    return res.status(500).json({ message: 'Error creating collection', error: error.message });
+  }
+};
+
+export const updateCollection = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { name, slug, description, image, active } = req.body;
+
+  try {
+    const updated = await prisma.collection.update({
+      where: { id },
+      data: {
+        name: name || undefined,
+        slug: slug || undefined,
+        description: description !== undefined ? description : undefined,
+        image: image !== undefined ? image : undefined,
+        active: active !== undefined ? Boolean(active) : undefined
+      }
+    });
+    return res.json({ message: 'Collection updated successfully', collection: updated });
+  } catch (error: any) {
+    return res.status(500).json({ message: 'Error updating collection', error: error.message });
+  }
+};
+
+export const deleteCollection = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    await prisma.collection.delete({ where: { id } });
+    return res.json({ message: 'Collection deleted successfully' });
+  } catch (error: any) {
+    return res.status(500).json({ message: 'Error deleting collection', error: error.message });
   }
 };
 

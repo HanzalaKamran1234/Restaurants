@@ -32,128 +32,156 @@ model Address {
   title          String        @default("Home") // e.g. "Home", "Office", "Parents"
   profileId      String
   profile        Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  landmark       String?
-  areaId         String
-  area           DeliveryArea  @relation(fields: [areaId], references: [id], onDelete: Restrict)
   fullAddress    String
-  latitude       Float?
-  longitude      Float?
+  city           String        @default("Karachi")
+  province       String        @default("Sindh")
+  postalCode     String?       @default("74600")
+  phone          String?
   isDefault      Boolean       @default(false)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
-}
-
-model DeliveryArea {
-  id             String        @id @default(uuid())
-  name           String        @unique // e.g. "North Nazimabad"
-  deliveryCharge Float         @default(150)
-  estimatedTime  String        @default("30 Mins")
-  minOrderAmount Float         @default(300)
-  available      Boolean       @default(true)
-  addresses      Address[]
   orders         Order[]
 }
 
 model Category {
-  id        String     @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
-  slug      String     @unique
+  slug      String    @unique
   image     String
-  menuItems MenuItem[]
+  products  Product[]
 }
 
-model MenuItem {
-  id           String      @id @default(uuid())
+model Collection {
+  id          String    @id @default(uuid())
+  name        String    // e.g., "Winter Classics", "Essentials"
+  slug        String    @unique
+  description String?
+  image       String?
+  active      Boolean   @default(true)
+  products    Product[]
+}
+
+model Product {
+  id           String           @id @default(uuid())
   name         String
   description  String
-  ingredients  String?     // Comma-separated list
-  calories     Int?
-  spiceLevel   String      @default("NONE") // NONE, MILD, MEDIUM, SPICY
-  servingSize  String?     // e.g. "1 Person"
   price        Float
-  discount     Float       @default(0) // Discount percentage
-  available    Boolean     @default(true)
-  prepTime     Int         @default(15) // in minutes
-  rating       Float       @default(4.5)
-  image        String
-  sizes        String      @default("[]")
-  gallery      String[]    @default([]) // Array of gallery image URLs
+  discount     Float            @default(0) // Discount percentage
+  rating       Float            @default(4.5)
+  fabric       String?          @default("100% Luxury Long-Staple Cotton")
+  fit          String?          @default("Relaxed Fit")
+  shippingInfo String?          @default("Standard premium shipping 2-3 business days. Free shipping on orders over Rs. 5000.")
+  returnsInfo  String?          @default("30-day complimentary returns and exchanges. Items must be in original condition with tags.")
+  available    Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  
   categoryId   String
-  category     Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  orderItems   OrderItem[]
+  category     Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  collectionId String?
+  collection   Collection?      @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  
+  images       ProductImage[]
+  variants     ProductVariant[]
   reviews      Review[]
   favorites    Favorite[]
   cartItems    CartItem[]
+  orderItems   OrderItem[]
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  url       String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductVariant {
+  id        String      @id @default(uuid())
+  productId String
+  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  color     String      // e.g., "Black", "Ivory", "Camel"
+  size      String      // e.g., "S", "M", "L", "XL"
+  sku       String?     @unique
+  inventory Int         @default(10)
+  cartItems CartItem[]
+  orderItems OrderItem[]
 }
 
 model Favorite {
   id         String   @id @default(uuid())
   profileId  String
   profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  menuItemId String
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
 
-  @@unique([profileId, menuItemId])
+  @@unique([profileId, productId])
 }
 
 model CartItem {
-  id         String   @id @default(uuid())
+  id         String          @id @default(uuid())
   profileId  String
-  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  menuItemId String
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
-  quantity   Int      @default(1)
-  size       String   @default("Regular")
-  notes      String?  // Special instructions
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  profile    Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId  String?
+  variant    ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity   Int             @default(1)
+  size       String          @default("M")
+  color      String          @default("Black")
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
 
-  @@unique([profileId, menuItemId, size])
+  @@unique([profileId, productId, size, color])
 }
 
 model Order {
-  id              String        @id @default(uuid())
-  orderNumber     String        @unique // e.g. "ZYF-000001"
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique // e.g. "VST-000001"
   profileId       String?
-  profile         Profile?      @relation(fields: [profileId], references: [id], onDelete: SetNull)
-  status          String        @default("PENDING") // PENDING, ACCEPTED, PREPARING, READY, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
+  profile         Profile?    @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  status          String      @default("PENDING") // PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
   subtotal        Float
-  deliveryCharge  Float
-  tax             Float
+  shippingCharge  Float       @default(200)
+  discountAmount  Float       @default(0)
+  tax             Float       @default(0)
   finalAmount     Float
-  paymentMethod   String        @default("COD") // COD, CARD, JAZZCASH, EASYPAISA
-  deliveryAddress String
-  nearestLandmark String?
-  areaId          String?
-  area            DeliveryArea? @relation(fields: [areaId], references: [id], onDelete: SetNull)
-  instructions    String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  paymentMethod   String      @default("COD") // COD, CARD, JAZZCASH, EASYPAISA
+  shippingAddress String
+  addressId       String?
+  address         Address?    @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
   items           OrderItem[]
 }
 
 model OrderItem {
-  id         String   @id @default(uuid())
+  id         String          @id @default(uuid())
   orderId    String
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  menuItemId String
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  order      Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId  String?
+  variant    ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
   quantity   Int
   price      Float
-  size       String   @default("Regular")
+  color      String          @default("Black")
+  size       String          @default("M")
 }
 
 model Review {
   id         String   @id @default(uuid())
   rating     Int      @default(5)
   comment    String
-  approved   Boolean  @default(false) // Admin approval workflow
+  approved   Boolean  @default(true)
   featured   Boolean  @default(false)
   profileId  String
   profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  menuItemId String
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
 }
 

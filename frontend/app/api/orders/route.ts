@@ -15,14 +15,17 @@ export async function GET() {
     const orders = await prisma.order.findMany({
       include: {
         items: {
-          include: { menuItem: true },
+          include: {
+            product: {
+              include: { images: true }
+            },
+            variant: true
+          },
         },
-        area: true,
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    // Format fields for frontend compatibility (e.g. rename subtotal to subtotal, finalAmount to finalAmount)
     return NextResponse.json(orders);
   } catch (error: any) {
     console.error('Error fetching admin orders:', error);
@@ -32,155 +35,156 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth(); // null if not logged in (guest order)
+    const { userId } = await auth(); // null if guest checkout
     const body = await req.json();
 
     const {
-      items, // Array of { menuItemId, quantity, size }
-      deliveryAddress,
-      nearestLandmark,
-      areaId,
-      instructions,
-      paymentMethod, // "COD", "JAZZCASH", "CARD"
+      items, // Array of { productId, quantity, size, color }
+      shippingAddress,
+      notes,
+      paymentMethod, // "COD", "CARD", "JAZZCASH", "EASYPAISA"
       customerName,
       customerPhone,
-      whatsappNumber,
+      addressId,
     } = body;
 
-    if (!items || items.length === 0 || !deliveryAddress || !areaId || !customerName || !customerPhone) {
-      return NextResponse.json({ message: 'Missing required checkout information' }, { status: 400 });
+    if (!items || items.length === 0 || !shippingAddress || !customerName || !customerPhone) {
+      return NextResponse.json({ message: 'Missing required shipping or items information' }, { status: 400 });
     }
 
-    // 1. Verify Delivery Area
-    const deliveryArea = await prisma.deliveryArea.findUnique({ where: { id: areaId } });
-    if (!deliveryArea) {
-      return NextResponse.json({ message: 'Selected delivery area not found' }, { status: 404 });
-    }
-
-    if (!deliveryArea.available) {
-      return NextResponse.json({ message: `Delivery to ${deliveryArea.name} is currently closed.` }, { status: 400 });
-    }
-
-    // 2. Calculate totals and validate items
+    // 1. Process items and verify stock availability
     let subtotal = 0;
-    const orderItemsData = [];
-    const notificationItems = [];
+    const orderItemsData: any[] = [];
+    const notificationItems: any[] = [];
 
-    for (const item of items) {
-      const dbItem = await prisma.menuItem.findUnique({ where: { id: item.menuItemId } });
-      if (!dbItem) {
-        return NextResponse.json({ message: `Menu item not found` }, { status: 404 });
-      }
+    // We run the stock check and total calculation inside a transaction to prevent race conditions
+    const order = await prisma.$transaction(async (tx) => {
+      
+      for (const item of items) {
+        const dbProduct = await tx.product.findUnique({
+          where: { id: item.productId },
+          include: { variants: true, images: true }
+        });
 
-      if (!dbItem.available) {
-        return NextResponse.json({ message: `Dish '${dbItem.name}' is currently sold out.` }, { status: 400 });
-      }
+        if (!dbProduct) {
+          throw new Error(`Product not found`);
+        }
 
-      // Dynamic price matching based on selected size
-      let itemPrice = dbItem.price;
-      const selectedSize = item.size || 'Regular';
-      if (dbItem.sizes) {
-        try {
-          const sizesList = JSON.parse(dbItem.sizes);
-          const matchedSize = sizesList.find((s: any) => s.size === selectedSize);
-          if (matchedSize) {
-            itemPrice = matchedSize.price;
+        if (!dbProduct.available) {
+          throw new Error(`Product '${dbProduct.name}' is currently unavailable.`);
+        }
+
+        // Find the variant matching color & size
+        const matchedVariant = dbProduct.variants.find(
+          v => v.color.toLowerCase() === item.color.toLowerCase() && v.size.toLowerCase() === item.size.toLowerCase()
+        );
+
+        if (!matchedVariant) {
+          throw new Error(`Size/Color variant (${item.color} / ${item.size}) not found for ${dbProduct.name}`);
+        }
+
+        if (matchedVariant.inventory < item.quantity) {
+          throw new Error(`Insufficient stock for ${dbProduct.name} (${item.color}/${item.size}). Available: ${matchedVariant.inventory}`);
+        }
+
+        const priceAfterDiscount = dbProduct.price * (1 - dbProduct.discount / 100);
+        subtotal += priceAfterDiscount * item.quantity;
+
+        // Decrement variant inventory
+        await tx.productVariant.update({
+          where: { id: matchedVariant.id },
+          data: {
+            inventory: {
+              decrement: item.quantity
+            }
           }
-        } catch (e) {
-          console.error('Error parsing sizes JSON on item', dbItem.name, e);
+        });
+
+        orderItemsData.push({
+          productId: dbProduct.id,
+          variantId: matchedVariant.id,
+          quantity: item.quantity,
+          price: priceAfterDiscount,
+          color: item.color,
+          size: item.size
+        });
+
+        notificationItems.push({
+          name: `${dbProduct.name} (${item.color} / ${item.size})`,
+          quantity: item.quantity,
+          price: priceAfterDiscount
+        });
+      }
+
+      // Calculate shipping
+      const shippingCharge = subtotal >= 5000 ? 0 : 200;
+      const finalAmount = subtotal + shippingCharge;
+
+      // Generate sequential order numbers: VST-000001
+      const count = await tx.order.count();
+      const orderNumber = `VST-${String(count + 1).padStart(6, '0')}`;
+
+      // Create Order
+      const newOrder = await tx.order.create({
+        data: {
+          orderNumber,
+          profileId: userId || null,
+          status: 'PENDING',
+          subtotal,
+          shippingCharge,
+          tax: 0, // Tax inclusive
+          finalAmount,
+          paymentMethod,
+          shippingAddress,
+          addressId: addressId || null,
+          notes,
+          items: {
+            create: orderItemsData,
+          },
+        },
+        include: {
+          items: {
+            include: {
+              product: { include: { images: true } },
+              variant: true
+            },
+          },
+        },
+      });
+
+      // Update customer loyalty points (1 point per 100 Rs spent)
+      if (userId) {
+        const pointsEarned = Math.floor(subtotal / 100);
+        if (pointsEarned > 0) {
+          await tx.profile.update({
+            where: { id: userId },
+            data: {
+              loyaltyPoints: {
+                increment: pointsEarned,
+              },
+            },
+          });
         }
       }
 
-      const itemPriceAfterDiscount = itemPrice * (1 - dbItem.discount / 100);
-      subtotal += itemPriceAfterDiscount * item.quantity;
-
-      orderItemsData.push({
-        menuItemId: dbItem.id,
-        quantity: item.quantity,
-        price: itemPriceAfterDiscount,
-        size: selectedSize,
-      });
-
-      notificationItems.push({
-        name: `${dbItem.name} (${selectedSize})`,
-        quantity: item.quantity,
-        price: itemPriceAfterDiscount,
-      });
-    }
-
-    // Verify minimum order amount constraint
-    if (subtotal < deliveryArea.minOrderAmount) {
-      return NextResponse.json({
-        message: `Minimum order amount of Rs. ${deliveryArea.minOrderAmount} is required for ${deliveryArea.name}. Your total is Rs. ${subtotal}.`
-      }, { status: 400 });
-    }
-
-    const deliveryCharge = deliveryArea.deliveryCharge;
-    const taxRate = 0.13; // 13% GST
-    const tax = parseFloat((subtotal * taxRate).toFixed(2));
-    const finalAmount = parseFloat((subtotal + deliveryCharge + tax).toFixed(2));
-
-    // Generate sequential ZYF-000001 order numbers
-    const count = await prisma.order.count();
-    const orderNumber = `ZYF-${String(count + 1).padStart(6, '0')}`;
-
-    // Place the order
-    const order = await prisma.order.create({
-      data: {
-        orderNumber,
-        profileId: userId || null,
-        status: 'PENDING',
-        subtotal,
-        deliveryCharge,
-        tax,
-        finalAmount,
-        paymentMethod,
-        deliveryAddress,
-        nearestLandmark,
-        areaId: deliveryArea.id,
-        instructions,
-        items: {
-          create: orderItemsData,
-        },
-      },
-      include: {
-        items: {
-          include: { menuItem: true },
-        },
-      },
+      return newOrder;
     });
 
-    // 3. Loyalty points addition (only for registered profiles)
-    if (userId) {
-      const pointsEarned = Math.floor(subtotal / 100); // 1 point per 100 Rs spent
-      if (pointsEarned > 0) {
-        await prisma.profile.update({
-          where: { id: userId },
-          data: {
-            loyaltyPoints: {
-              increment: pointsEarned,
-            },
-          },
-        });
-      }
-    }
-
-    // 4. Trigger Email and WhatsApp click-to-chat payload
+    // 2. Trigger notifications
+    const shippingChargeVal = subtotal >= 5000 ? 0 : 200;
+    const finalAmountVal = subtotal + shippingChargeVal;
+    
     const notificationData: OrderNotificationData = {
-      orderNumber,
+      orderNumber: order.orderNumber,
       customerName,
       phone: customerPhone,
-      whatsapp: whatsappNumber || undefined,
-      address: deliveryAddress,
-      area: deliveryArea.name,
-      landmark: nearestLandmark || undefined,
+      address: shippingAddress,
       paymentMethod,
       items: notificationItems,
       totalAmount: subtotal,
-      deliveryCharge,
-      tax,
-      finalAmount,
-      instructions,
+      shippingCharge: shippingChargeVal,
+      finalAmount: finalAmountVal,
+      instructions: notes || undefined,
     };
 
     const whatsappLink = NotificationService.getWhatsAppApiLink(notificationData);
@@ -189,16 +193,16 @@ export async function POST(req: Request) {
     const customerEmailHtml = NotificationService.generateEmailTemplate('CONFIRMATION', notificationData);
     const adminEmailHtml = NotificationService.generateEmailTemplate('ADMIN_ALERT', notificationData);
 
-    NotificationService.saveMockEmail(`order_${orderNumber}_customer_confirm.html`, customerEmailHtml);
-    NotificationService.saveMockEmail(`order_${orderNumber}_admin_alert.html`, adminEmailHtml);
+    NotificationService.saveMockEmail(`order_${order.orderNumber}_customer_confirm.html`, customerEmailHtml);
+    NotificationService.saveMockEmail(`order_${order.orderNumber}_admin_alert.html`, adminEmailHtml);
 
     return NextResponse.json({
-      message: 'Order created successfully',
+      message: 'Purchase completed successfully',
       order,
       whatsappLink,
     }, { status: 201 });
   } catch (error: any) {
-    console.error('Error creating order:', error);
-    return NextResponse.json({ message: 'Error placing order', error: error.message }, { status: 500 });
+    console.error('Error placing order:', error);
+    return NextResponse.json({ message: error.message || 'Error placing order' }, { status: 500 });
   }
 }

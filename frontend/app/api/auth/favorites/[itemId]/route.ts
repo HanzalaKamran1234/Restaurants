@@ -17,9 +17,9 @@ export async function POST(
     // Check if favorite already exists
     const existingFavorite = await prisma.favorite.findUnique({
       where: {
-        profileId_menuItemId: {
+        profileId_productId: {
           profileId: userId,
-          menuItemId: itemId,
+          productId: itemId,
         },
       },
     });
@@ -37,7 +37,7 @@ export async function POST(
       await prisma.favorite.create({
         data: {
           profileId: userId,
-          menuItemId: itemId,
+          productId: itemId,
         },
       });
       return NextResponse.json({ message: 'Added to favorites', isFavorite: true });

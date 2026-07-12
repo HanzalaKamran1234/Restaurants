@@ -2,82 +2,82 @@
 
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Sparkles, UtensilsCrossed, ShieldAlert, Award } from 'lucide-react';
+import { Sparkles, Award, Scissors } from 'lucide-react';
 
 export default function Story() {
   const { language } = useApp();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 font-sans relative z-10 space-y-16">
+    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16 font-sans relative z-10 space-y-20">
       
       {/* Header */}
       <div className="text-center space-y-4 max-w-2xl mx-auto">
-        <span className="text-xs tracking-widest text-gold font-bold uppercase">The Ziyafat Legacy</span>
-        <h1 className="text-3xl sm:text-5xl font-black text-white">Our Culinary Story</h1>
+        <span className="text-xs tracking-[0.25em] text-primary font-bold uppercase">The Vestra Legacy</span>
+        <h1 className="text-2xl sm:text-4xl font-serif tracking-widest text-white uppercase">Our Editorial Journey</h1>
         <p className="text-xs sm:text-sm text-text-muted leading-relaxed font-light">
-          Redefining traditional hospitality in Karachi with an uncompromising commitment to premium recipes and high culinary standards.
+          Redefining international fashion standards with an uncompromising commitment to minimalist aesthetics, structural tailoring, and premium fabrics.
         </p>
       </div>
 
       {/* Main Story Blocks */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <div className="space-y-6">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white">A Traditional Feast Transformed</h2>
+          <h2 className="text-xl sm:text-2xl font-serif tracking-widest text-white uppercase">A Minimalist Silhouette Transformed</h2>
           <p className="text-xs sm:text-sm text-text-muted leading-relaxed font-light">
-            In Urdu, <strong>ضیافت (Ziyafat)</strong> means a premium feast, a celebration of traditional hospitality, and a coming-together of flavors. We founded Ziyafat with a singular mission: to bring the luxury and taste of premium fine dining directly to the comfort of your home.
+            In Latin, <strong>Vestra</strong> represents ownership and identity. We founded THE VESTRA with a singular mission: to construct luxury essentials that empower individuals to wear confidence.
           </p>
           <p className="text-xs sm:text-sm text-text-muted leading-relaxed font-light">
-            Every Biryani is simmered with hand-picked basmati grains and authentic saffron. Every burger patty is hand-smashed with prime-cut grass-fed local beef. We believe that food delivery should never mean sacrificing visual and culinary excellence.
+            Every garment is crafted from hand-picked, extra-long staple combed cotton. Every seam is double-flatlocked for durability. We believe that everyday clothing should feel premium and look like a billion-dollar statement.
           </p>
 
-          <div className="border-l-4 border-primary pl-4 py-2 italic text-sm text-gold font-urdu leading-loose">
-            "روایتی مہمان نوازی اور بہترین ذائقوں کا حسین سنگم - یہ ہے ضیافت کا فلسفہ۔"
+          <div className="border-l-2 border-primary pl-4 py-2 italic text-xs text-primary leading-relaxed uppercase tracking-wider">
+            "WEAR CONFIDENCE. Every stitch is a statement of intent, crafted for the modern silhouette."
           </div>
         </div>
 
-        <div className="h-80 sm:h-96 rounded-3xl overflow-hidden border border-white/10 relative shadow-2xl bg-surface">
+        <div className="h-80 sm:h-96 rounded overflow-hidden border border-white/10 relative shadow-2xl bg-surface">
           <img
-            src="https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&q=80&w=800"
-            alt="Chef preparing Karahi"
-            className="w-full h-full object-cover"
+            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=800"
+            alt="Vestra Tailoring Studio"
+            className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-60"></div>
         </div>
       </div>
 
-      {/* Chef standards highlights */}
-      <section className="pt-8 space-y-8">
-        <h3 className="text-xl sm:text-2xl font-extrabold text-white text-center">Our Uncompromising Standards</h3>
+      {/* Tailoring highlights */}
+      <section className="pt-8 space-y-12">
+        <h3 className="text-lg sm:text-xl font-serif tracking-widest text-white text-center uppercase">Our Uncompromising Standards</h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
-          <div className="glass p-8 rounded-2xl border border-white/5 space-y-4">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 text-primary-light flex items-center justify-center">
-              <Sparkles size={18} />
+          <div className="glass p-8 rounded border border-white/5 space-y-4">
+            <div className="h-10 w-10 rounded bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
+              <Sparkles size={16} />
             </div>
-            <h4 className="text-base font-bold text-white">Pure Desi Ingredients</h4>
+            <h4 className="text-xs font-serif font-bold text-white uppercase tracking-wider">Pure Luxury Materials</h4>
             <p className="text-xs text-text-muted leading-relaxed font-light">
-              We never use cheap palm oils or artificial tenderizers. Our Desi Khany are prepared using pure Desi Ghee and hand-ground spices directly sourced from local farmers.
+              We source organic loopback French terry cotton, heavy 260GSM combed cottons, and vegetable-tanned Italian leather hides. No cheap synthetic blends.
             </p>
           </div>
 
-          <div className="glass p-8 rounded-2xl border border-white/5 space-y-4">
-            <div className="h-10 w-10 rounded-xl bg-gold/10 border border-gold/20 text-gold flex items-center justify-center">
-              <UtensilsCrossed size={18} />
+          <div className="glass p-8 rounded border border-white/5 space-y-4">
+            <div className="h-10 w-10 rounded bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
+              <Scissors size={16} />
             </div>
-            <h4 className="text-base font-bold text-white">Michelin Grade Kitchen</h4>
+            <h4 className="text-xs font-serif font-bold text-white uppercase tracking-wider">Master Craftsmanship</h4>
             <p className="text-xs text-text-muted leading-relaxed font-light">
-              Our executive chefs have worked in five-star hotels and Michelin-recognized international kitchens, ensuring standard preparation protocols on every dish.
+              Our tailoring team operates under standard pattern designs. Each garment undergoes strict quality inspection for exact fit proportions and structural drape.
             </p>
           </div>
 
-          <div className="glass p-8 rounded-2xl border border-white/5 space-y-4">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 text-primary-light flex items-center justify-center">
-              <Award size={18} />
+          <div className="glass p-8 rounded border border-white/5 space-y-4">
+            <div className="h-10 w-10 rounded bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
+              <Award size={16} />
             </div>
-            <h4 className="text-base font-bold text-white">Premium Eco-Packaging</h4>
+            <h4 className="text-xs font-serif font-bold text-white uppercase tracking-wider">Dust Bag Packaging</h4>
             <p className="text-xs text-text-muted leading-relaxed font-light">
-              Our meals are delivered in insulated, premium custom matte black cardboard boxes to prevent moisture condensation and ensure the food arrives pristine and hot.
+              Every shipment is dispatched in custom heavyweight matte-black garment boxes, wrapped in acid-free tissue paper, complete with luxury cotton dust bags.
             </p>
           </div>
 

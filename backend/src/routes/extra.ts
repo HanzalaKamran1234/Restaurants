@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import {
-  getDeliveryAreas,
-  updateDeliveryArea,
+  getCollections,
+  createCollection,
+  updateCollection,
+  deleteCollection,
   submitContactMessage,
   getContactMessages,
   subscribeNewsletter
@@ -10,9 +12,11 @@ import { authenticateToken, requireRole } from '../middlewares/authMiddleware';
 
 const router = Router();
 
-// Delivery
-router.get('/delivery-areas', getDeliveryAreas);
-router.put('/delivery-areas/:id', authenticateToken, requireRole('ADMIN'), updateDeliveryArea);
+// Collections (replacing Delivery Areas)
+router.get('/collections', getCollections);
+router.post('/collections', authenticateToken, requireRole('ADMIN'), createCollection);
+router.put('/collections/:id', authenticateToken, requireRole('ADMIN'), updateCollection);
+router.delete('/collections/:id', authenticateToken, requireRole('ADMIN'), deleteCollection);
 
 // Contact
 router.post('/contact', submitContactMessage);
