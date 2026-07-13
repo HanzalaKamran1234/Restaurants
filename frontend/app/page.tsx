@@ -95,7 +95,7 @@ export default function Home() {
               <span>THE VESTRA EDITORIAL CAPSULE</span>
             </div>
             
-            <h1 className="text-5xl sm:text-7xl font-serif font-black tracking-[0.08em] text-white leading-[1.1] uppercase">
+            <h1 className="text-[8.5vw] min-[480px]:text-5xl sm:text-7xl font-serif font-black tracking-[0.08em] text-white leading-[1.1] uppercase">
               WEAR <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-light">CONFIDENCE.</span>
             </h1>
