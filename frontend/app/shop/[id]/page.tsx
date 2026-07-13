@@ -242,7 +242,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     activeImage === img.url ? 'border-primary' : 'border-white/5 hover:border-white/20'
                   }`}
                 >
-                  <img src={img.url} alt="Product View" className="w-full h-full object-cover grayscale" />
+                  <img src={img.url} alt="Product View" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -257,9 +257,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 src={activeImage}
                 alt={product.name}
                 style={zoomStyle}
-                className="w-full h-full object-cover grayscale transition-transform duration-100 ease-out"
+                className="w-full h-full object-cover transition-transform duration-100 ease-out"
               />
-              <div className="absolute inset-0 bg-black/5 pointer-events-none"></div>
             </div>
 
           </div>
@@ -531,8 +530,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 return (
                   <div key={p.id} className="group flex flex-col justify-between hover-lift border border-white/5 p-4 rounded-xl relative bg-secondaryBg">
                     <Link href={`/shop/${p.id}`} className="relative h-64 overflow-hidden rounded-lg bg-surface block">
-                      <img src={p.image} alt={p.name} className="w-full h-full object-cover grayscale" />
-                      <div className="absolute inset-0 bg-black/10"></div>
+                      <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                     </Link>
                     <div className="pt-4 space-y-1 flex-1 flex flex-col justify-between">
                       <div>

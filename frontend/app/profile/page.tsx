@@ -359,7 +359,7 @@ export default function ProfileDashboard() {
                       </button>
                       
                       <div className="h-16 w-12 rounded overflow-hidden flex-shrink-0 bg-surface border border-white/10">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover grayscale" />
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                       </div>
                       
                       <div className="flex flex-col justify-between py-0.5">

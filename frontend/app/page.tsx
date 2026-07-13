@@ -157,13 +157,11 @@ export default function Home() {
         </div>
 
         <Link href="/shop" className="relative group overflow-hidden rounded-2xl h-[500px] border border-white/5 hover:border-primary/20 transition-all flex flex-col justify-end">
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10"></div>
           <img
             src="/products/tshirts/product-01/image-01-front.png"
             alt="New Arrival"
-            className="absolute inset-0 w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700"
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           />
-          <div className="absolute inset-0 bg-black/20 z-0"></div>
           <div className="p-8 sm:p-12 z-20 space-y-3">
             <span className="text-[10px] tracking-[0.25em] text-primary font-bold uppercase">Featured Collection</span>
             <h3 className="text-2xl sm:text-3xl font-serif font-bold text-white tracking-widest uppercase">New Arrival Capsule</h3>
@@ -223,14 +221,13 @@ export default function Home() {
                     <img
                       src={mainImage}
                       alt={product.name}
-                      className="w-full h-full object-cover grayscale group-hover:hidden transition-all duration-700"
+                      className="w-full h-full object-cover group-hover:hidden transition-all duration-700"
                     />
                     <img
                       src={hoverImage}
                       alt={product.name}
-                      className="w-full h-full object-cover grayscale hidden group-hover:block transition-all duration-700"
+                      className="w-full h-full object-cover hidden group-hover:block transition-all duration-700"
                     />
-                    <div className="absolute inset-0 bg-black/10 z-0"></div>
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                       <div className="p-3 bg-black/80 rounded-full text-white border border-white/10">
                         <Eye size={18} />
@@ -330,7 +327,7 @@ export default function Home() {
 
       {/* 5. BRAND STORY BANNER */}
       <section className="relative h-[480px] flex items-center justify-center px-6 text-center border-t border-b border-white/5 bg-secondaryBg">
-        <div className="absolute inset-0 bg-[url('/products/tshirts/product-03/image-03-back.png')] bg-cover bg-center opacity-10 filter grayscale"></div>
+        <div className="absolute inset-0 bg-[url('/products/tshirts/product-03/image-03-back.png')] bg-cover bg-center opacity-10"></div>
         <div className="max-w-2xl mx-auto space-y-6 relative z-10">
           <span className="text-[9px] tracking-[0.35em] text-primary font-bold uppercase block">OUR PHILOSOPHY</span>
           <h2 className="text-3xl font-serif font-medium text-white uppercase tracking-widest leading-relaxed">
@@ -398,9 +395,8 @@ export default function Home() {
               <img
                 src={url}
                 alt="Instagram Look"
-                className="w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-black/20 opacity-100 group-hover:opacity-0 transition-opacity"></div>
             </div>
           ))}
         </div>

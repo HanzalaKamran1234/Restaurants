@@ -39,9 +39,8 @@ export default function Story() {
           <img
             src="/products/tshirts/product-02/image-02-front.png"
             alt="THE VESTRA Tailoring Studio"
-            className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+            className="w-full h-full object-cover transition-all duration-700"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-60"></div>
         </div>
       </div>
 

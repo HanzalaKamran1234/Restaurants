@@ -78,7 +78,7 @@ export const CartDrawer: React.FC = () => {
                   <div key={`${item.id}-${item.size}-${item.color}`} className="flex gap-4 p-3.5 rounded-xl bg-white/5 border border-white/5 relative group hover:border-primary/20 transition-all">
                     {/* Item Image */}
                     <div className="h-20 w-16 flex-shrink-0 overflow-hidden rounded border border-white/10 bg-surface">
-                      <img src={item.image} alt={item.name} className="h-full w-full object-cover grayscale" />
+                      <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                     </div>
 
                     {/* Item Details */}

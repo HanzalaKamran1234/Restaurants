@@ -662,7 +662,7 @@ export default function AdminDashboard() {
                     <tr key={item.id} className="border-b border-white/5 text-[11px] hover:bg-white/[0.02] transition-colors">
                       <td className="py-3.5 px-2 flex items-center gap-3">
                         <div className="h-10 w-8 rounded overflow-hidden flex-shrink-0 bg-surface border border-white/5">
-                          <img src={item.images?.[0]?.url || ''} alt={item.name} className="h-full w-full object-cover grayscale" />
+                          <img src={item.images?.[0]?.url || ''} alt={item.name} className="h-full w-full object-cover" />
                         </div>
                         <div>
                           <div className="font-bold text-white uppercase tracking-wide">{item.name}</div>

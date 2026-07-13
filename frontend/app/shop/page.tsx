@@ -132,7 +132,7 @@ export default function Shop() {
       
       {/* 1. CINEMATIC SHOP BANNER */}
       <section className="relative h-[250px] flex items-center justify-center overflow-hidden border-b border-white/5 bg-secondaryBg">
-        <div className="absolute inset-0 bg-[url('/products/tshirts/product-03/image-03-back.png')] bg-cover bg-center opacity-10 filter grayscale"></div>
+        <div className="absolute inset-0 bg-[url('/products/tshirts/product-03/image-03-back.png')] bg-cover bg-center opacity-10"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px] pointer-events-none"></div>
 
@@ -353,14 +353,13 @@ export default function Shop() {
                         <img
                           src={mainImage}
                           alt={product.name}
-                          className="w-full h-full object-cover grayscale group-hover:hidden transition-all duration-700"
+                          className="w-full h-full object-cover group-hover:hidden transition-all duration-700"
                         />
                         <img
                           src={hoverImage}
                           alt={product.name}
-                          className="w-full h-full object-cover grayscale hidden group-hover:block transition-all duration-700"
+                          className="w-full h-full object-cover hidden group-hover:block transition-all duration-700"
                         />
-                        <div className="absolute inset-0 bg-black/10 z-0"></div>
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                           <div className="p-3 bg-black/80 rounded-full text-white border border-white/10">
                             <Eye size={16} />

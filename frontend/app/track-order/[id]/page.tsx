@@ -229,7 +229,7 @@ export default function TrackOrderDetails({ params }: { params: Promise<{ id: st
                 <div key={item.id} className="flex justify-between items-center gap-3">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-8 rounded overflow-hidden bg-surface border border-white/10 flex-shrink-0">
-                      <img src={item.product?.images?.[0]?.url || ''} alt={item.product?.name} className="h-full w-full object-cover grayscale" />
+                      <img src={item.product?.images?.[0]?.url || ''} alt={item.product?.name} className="h-full w-full object-cover" />
                     </div>
                     <div>
                       <div className="text-white font-medium uppercase tracking-wide">{item.product?.name}</div>
