@@ -191,6 +191,78 @@ async function main() {
         { color: 'Prussian White', size: 'XL', inventory: 25 },
         { color: 'Prussian White', size: 'XXL', inventory: 25 }
       ]
+    },
+    {
+      name: 'Springfield Architectural Silhouette Tee',
+      description: 'Constructed from premium high-density combed cotton, the Springfield Architectural Silhouette Tee offers a modern, relaxed fit. It features a minimal geometric grid graphic on the front left chest and a bold blueprint-inspired structural print across the back. Spun for a soft feel, long-lasting comfort, and styled with a luxury Vestra finish.',
+      price: 999,
+      discount: 0,
+      rating: 4.8,
+      fabric: '100% Premium Combed Cotton (240GSM)',
+      fit: 'Modern Relaxed Fit',
+      brand: 'Springfield',
+      categoryId: category.id,
+      collectionId: newArrival.id,
+      images: [
+        '/products/tshirts/product-05/image-05-front.png',
+        '/products/tshirts/product-05/image-05-back.png'
+      ],
+      variants: [
+        { color: 'Off-White', size: 'XS', inventory: 25 },
+        { color: 'Off-White', size: 'S', inventory: 25 },
+        { color: 'Off-White', size: 'M', inventory: 25 },
+        { color: 'Off-White', size: 'L', inventory: 25 },
+        { color: 'Off-White', size: 'XL', inventory: 25 },
+        { color: 'Off-White', size: 'XXL', inventory: 25 }
+      ]
+    },
+    {
+      name: 'Springfield Celestial Earth Graphic Tee',
+      description: 'Embrace luxury styling with the Springfield Celestial Earth Graphic Tee. Woven from heavyweight combed cotton, it features a clean celestial sphere emblem on the front chest and a detailed cosmic mapping illustration on the back. Spun from organic yarns for a soft feel and premium structural drape, finished to the highest standards.',
+      price: 999,
+      discount: 0,
+      rating: 4.9,
+      fabric: '100% Luxury Organic Cotton (250GSM)',
+      fit: 'Modern Boxy Fit',
+      brand: 'Springfield',
+      categoryId: category.id,
+      collectionId: newArrival.id,
+      images: [
+        '/products/tshirts/product-06/image-06-front.png',
+        '/products/tshirts/product-06/image-06-back.png'
+      ],
+      variants: [
+        { color: 'Charcoal Grey', size: 'XS', inventory: 25 },
+        { color: 'Charcoal Grey', size: 'S', inventory: 25 },
+        { color: 'Charcoal Grey', size: 'M', inventory: 25 },
+        { color: 'Charcoal Grey', size: 'L', inventory: 25 },
+        { color: 'Charcoal Grey', size: 'XL', inventory: 25 },
+        { color: 'Charcoal Grey', size: 'XXL', inventory: 25 }
+      ]
+    },
+    {
+      name: 'Springfield Signature Coordinates Tee',
+      description: 'A staple of premium minimalism, the Springfield Signature Coordinates Tee features a clean coordinates typography on the chest and an architectural silhouette mapping on the back. Crafted from double-faced organic cotton loopback, it provides a soft feel, heavy structural drape, and long-lasting resilience with a luxury finish.',
+      price: 999,
+      discount: 0,
+      rating: 4.8,
+      fabric: '100% Combed Cotton Terry (260GSM)',
+      fit: 'Modern Regular Fit',
+      brand: 'Springfield',
+      categoryId: category.id,
+      collectionId: newArrival.id,
+      images: [
+        '/products/tshirts/product-07/image-07-front.png',
+        '/products/tshirts/product-07/image-07-back.png'
+      ],
+      variants: [
+        { color: 'Prussian White', size: 'XS', inventory: 25 },
+        { color: 'Prussian White', size: 'S', inventory: 25 },
+        { color: 'Prussian White', size: 'M', inventory: 25 },
+        { color: 'Prussian White', size: 'L', inventory: 25 },
+        { color: 'Prussian White', size: 'XL', inventory: 25 },
+        { color: 'Prussian White', size: 'XXL', inventory: 25 }
+      ]
     }
   ];
 
